@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criminal Network Intelligence System — Secure Access</title>
+<style>
+  :root{
+    --bg-black: #05070a;
+    --panel: rgba(8, 12, 18, 0.88);
+    --panel-border: rgba(180, 195, 210, 0.18);
+    --accent-red: #8B0000;
+    --accent-red-bright: #B91C1C;
+    --text-primary: #eef2f5;
+    --text-muted: #8b97a5;
+    --field-bg: rgba(255,255,255,0.04);
+    --field-border: rgba(180, 195, 210, 0.22);
+    --focus-glow: rgba(185, 28, 28, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+    color: var(--text-primary);
+  }
+
+  body {
+    min-height: 100vh;
+    background: #000;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Background ---------- */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    background-image: url('assets/bg.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      100deg,
+      rgba(0,0,0,0.75) 0%,
+      rgba(0,0,0,0.45) 38%,
+      rgba(0,0,0,0.25) 55%,
+      rgba(0,0,0,0.55) 100%
+    );
+  }
+
+  /* subtle scanline texture over everything */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
+
+  /* ---------- Layout ---------- */
+  .page {
+    position: relative;
+    z-index: 3;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 3vh 5vw;
+  }
+
+  /* ---------- Login Card ---------- */
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow:
+      0 25px 60px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(255,255,255,0.02) inset,
+      0 0 40px rgba(139,0,0,0.06);
+    animation: rise 0.6s ease-out;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .card-header h1 {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+  }
+
+  .card-header p {
+    font-size: 10px;
+    letter-spacing: 1.8px;
+    color: var(--text-muted);
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Fields ---------- */
+  .field-group {
+    margin-bottom: 10px;
+  }
+
+  .field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 6px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field-wrap:focus-within {
+    border-color: var(--accent-red-bright);
+    box-shadow: 0 0 0 3px var(--focus-glow);
+  }
+
+  .field-wrap .icon {
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .field-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 7px 4px 7px 0;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+
+  .field-wrap input::placeholder {
+    color: rgba(139, 151, 165, 0.6);
+  }
+
+  .toggle-btn {
+    width: 36px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .toggle-btn:hover { color: var(--text-primary); }
+
+  .field-error {
+    display: none;
+    font-size: 11px;
+    color: #f28b82;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .field-wrap.error {
+    border-color: #b3261e;
+  }
+
+  .field-wrap.error + .field-error {
+    display: block;
+  }
+
+  /* ---------- Row: remember / forgot ---------- */
+  .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 0 0 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .remember input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--field-border);
+    border-radius: 3px;
+    background: var(--field-bg);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .remember input[type="checkbox"]:checked {
+    background: var(--accent-red-bright);
+    border-color: var(--accent-red-bright);
+  }
+
+  .remember input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .remember label {
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+
+  .forgot-link {
+    font-size: 12px;
+    color: #c9d3dc;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .forgot-link:hover {
+    color: #fff;
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  /* ---------- Authenticate Button ---------- */
+  .auth-btn {
+    width: 100%;
+    padding: 11px 20px;
+    background: linear-gradient(180deg, var(--accent-red-bright) 0%, var(--accent-red) 100%);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 8px 20px rgba(139,0,0,0.35);
+    font-family: inherit;
+  }
+
+  .auth-btn:hover {
+    filter: brightness(1.12);
+    box-shadow: 0 10px 28px rgba(185,28,28,0.5);
+    transform: translateY(-1px);
+  }
+
+  .auth-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+  }
+
+  .auth-btn svg {
+    transition: transform 0.15s ease;
+  }
+
+  .auth-btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ---------- Footer note ---------- */
+  .card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    color: rgba(139, 151, 165, 0.7);
+    text-align: center;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .bg-overlay {
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.45) 0%,
+        rgba(0,0,0,0.3) 40%,
+        rgba(0,0,0,0.85) 100%
+      );
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page {
+      padding: 2vh 4vw;
+    }
+    .login-card {
+      padding: 20px 20px;
+      max-width: 100%;
+    }
+    .card-header h1 {
+      font-size: 19px;
+      letter-spacing: 1.5px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="scanlines"></div>
+
+  <div class="page">
+    <form class="login-card" id="loginForm" novalidate>
+
+      <div class="card-header">
+        <h1>SECURE ACCESS</h1>
+        <p>Authorized Personnel Only</p>
+      </div>
+
+      <div class="field-group">
+        <div class="field-wrap" id="officerIdWrap">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </span>
+          <input type="text" id="officerId" name="officerId" placeholder="Officer ID / Username" autocomplete="username">
+        </div>
+        <div class="field-error">Officer ID is required.</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-wrap" id="passwordWrap">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </span>
+          <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password">
+          <button type="button" class="toggle-btn" id="togglePassword" aria-label="Show password">
+            <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+        <div class="field-error">Password is required.</div>
+      </div>
+
+      <button type="submit" class="auth-btn" id="authBtn">
+        Authenticate
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+
+      <div class="row-between">
+        <div class="remember">
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Remember this device</label>
+        </div>
+        <a href="#" class="forgot-link" id="forgotLink">Forgot Password?</a>
+      </div>
+
+    </form>
+  </div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const officerIdInput = document.getElementById('officerId');
+  const passwordInput = document.getElementById('password');
+  const officerIdWrap = document.getElementById('officerIdWrap');
+  const passwordWrap = document.getElementById('passwordWrap');
+  const togglePassword = document.getElementById('togglePassword');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const forgotLink = document.getElementById('forgotLink');
+
+  // Password show/hide toggle
+  togglePassword.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    togglePassword.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+
+    // swap icon: open eye vs. eye-off
+    if (isPassword) {
+      eyeIcon.innerHTML = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.6 21.6 0 0 1-3.16 4.44"></path><line x1="1" y1="1" x2="23" y2="23"></line><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"></path>';
+    } else {
+      eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+    }
+  });
+
+    // Basic client-side validation
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let valid = true;
+
+    if (officerIdInput.value.trim() === '') {
+      officerIdWrap.classList.add('error');
+      valid = false;
+    } else {
+      officerIdWrap.classList.remove('error');
+    }
+
+    if (passwordInput.value.trim() === '') {
+      passwordWrap.classList.add('error');
+      valid = false;
+    } else {
+      passwordWrap.classList.remove('error');
+    }
+
+    if (!valid) return;
+
+    // Redirect to Command Centre
+    window.location.href = 'command.html';
+  });
+
+  // Clear error state as user types
+  officerIdInput.addEventListener('input', () => officerIdWrap.classList.remove('error'));
+  passwordInput.addEventListener('input', () => passwordWrap.classList.remove('error'));
+
+  forgotLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert('Forgot Password flow — placeholder for now.');
+  });
+</script>
+
+</body>
+</html>
