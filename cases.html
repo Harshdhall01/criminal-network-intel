@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Case Details | Criminal Network Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-raised:#0d1219;
+    --panel:#0f151f;
+    --panel-2:#111926;
+    --border:rgba(148,169,199,0.12);
+    --border-strong:rgba(148,169,199,0.22);
+    --text:#dbe4f0;
+    --text-dim:#8593a8;
+    --text-faint:#57667c;
+    --cyan:#2fd4e8;
+    --cyan-dim:rgba(47,212,232,0.14);
+    --blue:#4a8fe7;
+    --blue-dim:rgba(74,143,231,0.14);
+    --red:#ef4a5f;
+    --red-dim:rgba(239,74,95,0.14);
+    --amber:#f0a23c;
+    --amber-dim:rgba(240,162,60,0.14);
+    --green:#3ccb7f;
+    --green-dim:rgba(60,203,127,0.14);
+    --grey:#6b7686;
+    --purple:#9b7de0;
+    --purple-dim:rgba(155,125,224,0.14);
+    --font-head:'Oswald',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --header-h:76px;
+    --sidebar-w:220px;
+    --sidebar-w-collapsed:72px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(47,212,232,0.05), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(74,143,231,0.05), transparent 45%);
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#26303f; border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:#334152;}
+
+  /* ---------------- HEADER ---------------- */
+  .header{
+    position:fixed; top:0; left:0; right:0; height:var(--header-h);
+    background:linear-gradient(180deg,#0c1119 0%, #0a0e14 100%);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center;
+    padding:0 20px;
+    gap:20px;
+    z-index:100;
+  }
+  .header-left{
+    display:flex; align-items:center; gap:12px;
+    min-width:300px;
+  }
+  .emblem{
+    width:42px; height:42px;
+    border-radius:50%;
+    border:1.5px solid var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle, rgba(47,212,232,0.12), transparent 70%);
+    flex-shrink:0;
+  }
+  .emblem svg{width:24px; height:24px;}
+  .header-titles{line-height:1.25;}
+  .header-titles .t1{
+    font-family:var(--font-head);
+    font-weight:600;
+    font-size:15.5px;
+    letter-spacing:0.4px;
+    color:#f0f4fa;
+  }
+  .header-titles .t2{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--text-faint);
+    letter-spacing:0.6px;
+    margin-top:2px;
+  }
+  .header-center{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .tagline{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--cyan);
+    letter-spacing:2px;
+    opacity:0.85;
+  }
+  .search-bar{
+    width:100%;
+    display:flex; align-items:center;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:0 4px 0 12px;
+    height:34px;
+    transition:border-color .15s;
+  }
+  .search-bar:focus-within{border-color:var(--cyan);}
+  .search-bar input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text); font-size:12.5px; font-family:var(--font-body);
+    height:100%;
+  }
+  .search-bar input::placeholder{color:var(--text-faint);}
+  .search-bar button{
+    background:var(--cyan-dim);
+    border:none; border-radius:4px;
+    width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--cyan);
+    flex-shrink:0;
+  }
+  .search-bar button:hover{background:rgba(47,212,232,0.25);}
+  .header-right{
+    display:flex; align-items:center; gap:18px;
+    min-width:280px;
+    justify-content:flex-end;
+  }
+  .icon-btn{
+    position:relative;
+    width:36px; height:36px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--panel);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim);
+  }
+  .icon-btn:hover{border-color:var(--border-strong); color:var(--text);}
+  .badge{
+    position:absolute; top:-5px; right:-5px;
+    background:var(--red);
+    color:#fff; font-size:9.5px; font-weight:700;
+    min-width:16px; height:16px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border:1.5px solid var(--bg);
+    font-family:var(--font-mono);
+  }
+  .dropdown-wrap{position:relative;}
+  .dropdown-panel{
+    position:absolute; top:46px; right:0;
+    width:300px;
+    background:var(--panel-2);
+    border:1px solid var(--border-strong);
+    border-radius:10px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.5);
+    padding:8px;
+    display:none;
+    z-index:200;
+  }
+  .dropdown-panel.open{display:block;}
+  .dropdown-title{
+    font-family:var(--font-head);
+    font-size:11px; letter-spacing:1px;
+    color:var(--text-dim);
+    padding:8px 10px 6px;
+  }
+  .notif-item{
+    display:flex; gap:10px;
+    padding:9px 10px; border-radius:7px;
+  }
+  .notif-item:hover{background:var(--bg-raised);}
+  .notif-dot{width:7px; height:7px; border-radius:50%; margin-top:6px; flex-shrink:0;}
+  .notif-body b{display:block; font-size:12.5px; color:var(--text); font-weight:600;}
+  .notif-body span{font-size:11px; color:var(--text-faint);}
+  .profile{
+    display:flex; align-items:center; gap:9px;
+    padding:5px 9px 5px 5px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--panel);
+  }
+  .profile:hover{border-color:var(--border-strong);}
+  .avatar{
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-head); font-weight:600; font-size:12.5px; color:#04141a;
+  }
+  .profile-text{line-height:1.2;}
+  .profile-text .pname{font-size:12px; font-weight:600; color:var(--text);}
+  .profile-text .prole{font-size:10px; color:var(--text-faint);}
+  .chev{color:var(--text-faint); font-size:9px; margin-left:2px;}
+  .menu-item{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:7px;
+    font-size:12.5px; color:var(--text-dim);
+  }
+  .menu-item:hover{background:var(--bg-raised); color:var(--text);}
+  .menu-item.danger:hover{color:var(--red);}
+  .menu-divider{height:1px; background:var(--border); margin:6px 2px;}
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar{
+    position:fixed; top:var(--header-h); left:0; bottom:0;
+    width:var(--sidebar-w);
+    background:var(--bg-raised);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    z-index:90;
+  }
+  .nav-list{padding:14px 10px; display:flex; flex-direction:column; gap:3px; flex:1;}
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 12px;
+    border-radius:8px;
+    color:var(--text-dim);
+    font-size:12.8px;
+    font-weight:500;
+    border:1px solid transparent;
+    position:relative;
+  }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:var(--panel); color:var(--text);}
+  .nav-item.active{
+    background:var(--cyan-dim);
+    color:var(--cyan);
+    border-color:rgba(47,212,232,0.35);
+  }
+  .nav-item.active::before{
+    content:"";
+    position:absolute; left:-10px; top:50%; transform:translateY(-50%);
+    width:3px; height:60%;
+    background:var(--cyan);
+    border-radius:0 3px 3px 0;
+  }
+  .sidebar-footer{
+    position:relative;
+    height:150px;
+    border-top:1px solid var(--border);
+    display:flex; align-items:flex-end; justify-content:center;
+    overflow:hidden;
+    padding:14px 10px 16px;
+    background:radial-gradient(ellipse at bottom, rgba(47,212,232,0.06), transparent 70%);
+  }
+  .sidebar-footer-text{
+    position:relative; z-index:2;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:8.6px;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    line-height:1.6;
+  }
+  .tricolor-line{
+    position:absolute; bottom:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#ff9933 0%, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%, #138808 100%);
+  }
+
+  /* ---------------- LAYOUT ---------------- */
+  .app-main{
+    margin-left:var(--sidebar-w);
+    margin-top:var(--header-h);
+    padding:20px 24px 90px;
+    min-height:calc(100vh - var(--header-h));
+    position:relative; z-index:1;
+  }
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:12px; color:var(--text-dim); font-weight:500;
+    margin-bottom:14px;
+  }
+  .back-link:hover{color:var(--cyan);}
+  .back-link svg{width:14px; height:14px;}
+
+  /* ---- case switcher (testing aid) ---- */
+  .case-switcher{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:10px 14px; margin-bottom:16px;
+  }
+  .case-switcher .sw-label{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.8px; color:var(--text-faint);
+    margin-right:2px;
+  }
+  .sw-btn{
+    background:var(--panel-2); border:1px solid var(--border);
+    color:var(--text-dim); font-size:11.5px; font-weight:500;
+    padding:6px 12px; border-radius:7px;
+  }
+  .sw-btn:hover{border-color:var(--border-strong); color:var(--text);}
+  .sw-btn.active{background:var(--cyan-dim); border-color:rgba(47,212,232,0.4); color:var(--cyan);}
+
+  /* ---- case banner ---- */
+  .case-banner{
+    position:relative;
+    border-radius:14px;
+    border:1px solid var(--border);
+    overflow:hidden;
+    min-height:210px;
+    display:flex;
+    margin-bottom:18px;
+  }
+  .banner-info{
+    position:relative; z-index:2;
+    flex:1;
+    padding:22px 24px 20px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    background:linear-gradient(100deg, rgba(9,13,19,0.97) 0%, rgba(9,13,19,0.88) 55%, rgba(9,13,19,0.35) 100%);
+  }
+  .banner-top-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .priority-badge{
+    font-family:var(--font-mono); font-size:10.5px; font-weight:700; letter-spacing:0.6px;
+    padding:4px 10px; border-radius:5px;
+  }
+  .banner-case-id{font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint); letter-spacing:0.5px;}
+  .banner-title{font-family:var(--font-head); font-size:27px; font-weight:600; color:#f4f8fc; letter-spacing:0.3px; margin-bottom:6px;}
+  .banner-desc{font-size:12.8px; color:var(--text-dim); max-width:560px; line-height:1.5; margin-bottom:16px;}
+  .banner-meta{display:flex; flex-wrap:wrap; gap:18px; align-items:center;}
+  .meta-item{display:flex; align-items:center; gap:7px; font-size:11.8px; color:var(--text-dim);}
+  .meta-item svg{width:14px; height:14px; color:var(--text-faint); flex-shrink:0;}
+  .meta-status-dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 3px rgba(60,203,127,0.18);}
+  .banner-actions{
+    position:absolute; top:18px; right:20px; z-index:3;
+    display:flex; gap:9px;
+  }
+  .btn-outline{
+    display:flex; align-items:center; gap:7px;
+    background:rgba(15,21,31,0.7);
+    border:1px solid var(--border-strong);
+    color:var(--text-dim);
+    font-size:11.5px; font-weight:600;
+    padding:8px 13px; border-radius:7px;
+    backdrop-filter:blur(6px);
+  }
+  .btn-outline:hover{border-color:var(--cyan); color:var(--cyan);}
+  .btn-outline svg{width:14px; height:14px;}
+  .btn-solid{
+    display:flex; align-items:center; gap:7px;
+    background:var(--red);
+    border:1px solid var(--red);
+    color:#fff;
+    font-size:11.5px; font-weight:700;
+    padding:8px 14px; border-radius:7px;
+  }
+  .btn-solid:hover{filter:brightness(1.1);}
+  .btn-solid svg{width:14px; height:14px;}
+  .banner-photo{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    z-index:1;
+  }
+  .banner-photo::after{
+    content:attr(data-phrase);
+    position:absolute; right:26px; bottom:14px;
+    font-family:var(--font-head); font-size:40px; font-weight:700;
+    color:rgba(255,255,255,0.06);
+    letter-spacing:2px; white-space:nowrap;
+    pointer-events:none;
+  }
+
+  /* ---- tabs ---- */
+  .tab-bar{
+    display:flex; gap:4px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:18px;
+    overflow-x:auto;
+  }
+  .tab-item{
+    padding:11px 16px;
+    font-size:12.5px; font-weight:600; color:var(--text-faint);
+    border-bottom:2px solid transparent;
+    white-space:nowrap;
+  }
+  .tab-item:hover{color:var(--text-dim);}
+  .tab-item.active{color:var(--cyan); border-bottom-color:var(--cyan);}
+
+  .tab-panel{display:none;}
+  .tab-panel.show{display:block;}
+  .placeholder-tab{
+    height:340px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    border:1px dashed var(--border-strong); border-radius:12px; background:var(--panel); color:var(--text-faint);
+  }
+  .placeholder-tab h3{font-family:var(--font-head); color:var(--text-dim); font-weight:500; letter-spacing:1px;}
+  .placeholder-tab p{font-size:12.5px;}
+
+  /* ---- generic panel ---- */
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:12px;}
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:15px 18px; border-bottom:1px solid var(--border);
+  }
+  .panel-head h3{font-family:var(--font-head); font-size:12.5px; font-weight:600; letter-spacing:0.8px; color:var(--text);}
+  .link-btn{display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--cyan); font-weight:500;}
+  .link-btn:hover{text-decoration:underline;}
+  .icon-btn-sm{
+    display:flex; align-items:center; gap:6px;
+    background:var(--panel-2); border:1px solid var(--border); border-radius:6px;
+    padding:5px 10px; font-size:11px; color:var(--text-dim); font-weight:600;
+  }
+  .icon-btn-sm:hover{border-color:var(--cyan); color:var(--cyan);}
+  .icon-btn-sm svg{width:12px; height:12px;}
+
+  /* ---- overview grid ---- */
+  .overview-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;
+  }
+  .info-list{padding:6px 18px 16px;}
+  .info-row{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+    padding:10px 0; border-bottom:1px solid var(--border);
+  }
+  .info-row:last-of-type{border-bottom:none;}
+  .info-label{font-size:11.5px; color:var(--text-faint); flex-shrink:0; min-width:140px;}
+  .info-value{font-size:12.5px; color:var(--text); font-weight:500; text-align:right;}
+  .info-value.with-dot{display:flex; align-items:center; gap:7px; justify-content:flex-end;}
+  .dot-sm{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .brief-desc{margin-top:6px; padding-top:12px; border-top:1px solid var(--border);}
+  .brief-desc .info-label{margin-bottom:7px; min-width:auto;}
+  .brief-desc p{font-size:12.3px; color:var(--text-dim); line-height:1.6;}
+
+  /* ---- stats grid ---- */
+  .stats-grid-2x3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:16px 18px;}
+  .stat-tile{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:10px;
+    padding:14px 12px; display:flex; flex-direction:column; gap:8px;
+  }
+  .stat-tile-icon{
+    width:30px; height:30px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stat-tile-icon svg{width:15px; height:15px;}
+  .stat-tile-num{font-family:var(--font-head); font-size:22px; font-weight:600; color:#f2f6fb;}
+  .stat-tile-label{font-size:10.5px; color:var(--text-faint);}
+
+  /* ---- timeline ---- */
+  .timeline-list{padding:16px 18px;}
+  .tl-row{display:flex; gap:12px; position:relative; padding-bottom:18px;}
+  .tl-row:last-child{padding-bottom:0;}
+  .tl-row::before{
+    content:""; position:absolute; left:4.5px; top:16px; bottom:-2px; width:1px;
+    background:var(--border);
+  }
+  .tl-row:last-child::before{display:none;}
+  .tl-dot{width:10px; height:10px; border-radius:50%; margin-top:3px; flex-shrink:0; z-index:1;}
+  .tl-body{flex:1;}
+  .tl-date{font-family:var(--font-mono); font-size:10px; color:var(--text-faint); margin-bottom:2px;}
+  .tl-desc{font-size:12.3px; color:var(--text); line-height:1.4;}
+
+  /* ---- bottom row: evidence + notes ---- */
+  .bottom-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:16px;}
+  .evidence-row{
+    display:flex; gap:12px; padding:16px 18px; overflow-x:auto;
+  }
+  .evidence-card{
+    flex-shrink:0; width:150px;
+    border:1px solid var(--border); border-radius:10px; overflow:hidden;
+    background:var(--panel-2);
+  }
+  .evidence-card:hover{border-color:var(--cyan);}
+  .ev-thumb{
+    height:90px; position:relative;
+    background-size:cover; background-position:center;
+    background-color:#0b111a;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ev-type-badge{
+    position:absolute; top:7px; left:7px;
+    width:22px; height:22px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .ev-type-badge svg{width:12px; height:12px;}
+  .ev-play{
+    width:34px; height:34px; border-radius:50%;
+    background:rgba(10,14,20,0.65); border:1.5px solid rgba(255,255,255,0.7);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ev-play svg{width:13px; height:13px; margin-left:2px;}
+  .ev-info{padding:9px 10px 11px;}
+  .ev-filename{font-family:var(--font-mono); font-size:10.3px; font-weight:600; color:var(--text); word-break:break-all;}
+  .ev-caption{font-size:10.5px; color:var(--text-faint); margin-top:3px;}
+
+  /* ---- notes ---- */
+  .notes-list{padding:14px 18px;}
+  .note-row{display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--border);}
+  .note-row:last-child{border-bottom:none; padding-bottom:0;}
+  .note-avatar{
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-head); font-size:10.5px; font-weight:600; color:#04141a;
+  }
+  .note-body{flex:1; min-width:0;}
+  .note-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+  .note-name{font-size:12px; font-weight:600; color:var(--text);}
+  .note-time{font-family:var(--font-mono); font-size:9.5px; color:var(--text-faint); flex-shrink:0;}
+  .note-text{font-size:11.8px; color:var(--text-dim); line-height:1.5; margin-top:4px;}
+
+  /* ---------------- FOOTER ---------------- */
+  .footer{
+    position:fixed; bottom:0; left:var(--sidebar-w); right:0; height:36px;
+    background:var(--bg-raised); border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px; font-family:var(--font-mono); font-size:10px; letter-spacing:0.5px;
+    color:var(--text-faint); z-index:80;
+  }
+  .footer-right{display:flex; align-items:center; gap:16px;}
+  .system-online{display:flex; align-items:center; gap:6px; color:var(--green);}
+  .pulse-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--green);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(60,203,127,0.55);}
+    70%{box-shadow:0 0 0 7px rgba(60,203,127,0);}
+    100%{box-shadow:0 0 0 0 rgba(60,203,127,0);}
+  }
+
+  .toast{
+    position:fixed; bottom:52px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2); border:1px solid var(--cyan);
+    color:var(--text); padding:11px 18px; border-radius:8px; font-size:12.5px;
+    z-index:600; opacity:0; pointer-events:none; transition:all .25s ease;
+    box-shadow:0 12px 30px rgba(0,0,0,0.5);
+    max-width:340px; white-space:pre-line;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,8,12,0.72);
+    display:none; align-items:center; justify-content:center; z-index:500;
+    backdrop-filter:blur(2px);
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    width:420px; max-width:90vw;
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,0.6);
+  }
+  .modal-box .modal-img{height:200px; background-size:cover; background-position:center;}
+  .modal-box .modal-body{padding:18px 20px;}
+  .modal-box h3{font-family:var(--font-mono); font-size:13px; color:var(--text); margin-bottom:4px;}
+  .modal-box p{font-size:11.5px; color:var(--text-faint); margin-bottom:16px;}
+  .modal-box .modal-close{
+    width:100%; padding:9px; border-radius:7px; border:1px solid var(--border);
+    background:transparent; color:var(--text-dim); font-size:12px; font-weight:600;
+  }
+  .modal-box .modal-close:hover{border-color:var(--border-strong); color:var(--text);}
+
+  @media (max-width:1100px){
+    .overview-grid{grid-template-columns:1fr;}
+    .bottom-grid{grid-template-columns:1fr;}
+    .stats-grid-2x3{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:840px){
+    .header-center{display:none;}
+    .sidebar{width:var(--sidebar-w-collapsed);}
+    .nav-item span{display:none;}
+    .app-main{margin-left:var(--sidebar-w-collapsed);}
+    .footer{left:var(--sidebar-w-collapsed);}
+    .sidebar-footer{display:none;}
+    .header-left .header-titles{display:none;}
+    .banner-title{font-size:21px;}
+    .banner-photo::after{font-size:26px;}
+    .stats-grid-2x3{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="header">
+  <div class="header-left">
+    <div class="emblem" title="National Emblem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2fd4e8" stroke-width="1.4">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 6v12M7 9l10 6M17 9L7 15" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="header-titles">
+      <div class="t1">CRIMINAL NETWORK INTELLIGENCE SYSTEM</div>
+      <div class="t2">MINISTRY OF HOME AFFAIRS | GOVT. OF INDIA</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <div class="tagline">ANALYZE NETWORKS. DISRUPT CRIME.</div>
+    <div class="search-bar">
+      <input id="globalSearch" type="text" placeholder="Search by name, phone number, FIR no. ..." />
+      <button id="globalSearchBtn" title="Search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="badge">3</span>
+      </button>
+      <div class="dropdown-panel" id="notifPanel">
+        <div class="dropdown-title">NOTIFICATIONS</div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--red)"></span><div class="notif-body"><b>New high-priority alert</b><span>Suspicious ₹48,00,000 transaction flagged — 21:12</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--amber)"></span><div class="notif-body"><b>Case C-2026-0398 updated</b><span>3 new links added to Hawala network</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--cyan)"></span><div class="notif-body"><b>Weekly report ready</b><span>Network growth summary generated</span></div></div>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="profile" id="profileBtn">
+        <div class="avatar">AS</div>
+        <div class="profile-text">
+          <div class="pname">Inspector A. Sharma</div>
+          <div class="prole">Delhi Police (Intelligence)</div>
+        </div>
+        <span class="chev">▾</span>
+      </button>
+      <div class="dropdown-panel" id="profilePanel" style="width:180px;">
+        <div class="menu-item" data-action="profile"><span>👤</span> Profile</div>
+        <div class="menu-item" data-action="settings"><span>⚙</span> Settings</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item danger" data-action="logout"><span>⏻</span> Logout</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar">
+  <nav class="nav-list">
+    <a class="nav-item" href="command.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-8 9 8"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/></svg><span>Command Center</span></a>
+    <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5"/></svg><span>Cases</span></a>
+    <a class="nav-item" href="networkanalysis.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7l3 9M16 7l-3 9M8.3 6h7.4"/></svg><span>Network Analysis</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg><span>Entities</span></a>
+    <a class="nav-item" href="alert.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17h.01"/></svg><span>Alerts</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Reports</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="2.6"/><path d="M4 5v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6V5M4 11v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6v-6"/></svg><span>Data Sources</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.6 1z"/></svg><span>Settings</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">INTELLIGENCE DRIVES<br>SAFER COMMUNITIES</div>
+    <div class="tricolor-line"></div>
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="app-main">
+
+  <a class="back-link" href="command.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Cases
+  </a>
+
+  <!-- Case switcher — testing aid to prove the template re-renders -->
+  <div class="case-switcher">
+    <span class="sw-label">VIEW SAMPLE CASE:</span>
+    <button class="sw-btn" data-case="C-2026-0412">C-2026-0412 · Metro Arms Supply Network</button>
+    <button class="sw-btn" data-case="C-2026-0398">C-2026-0398 · Hawala Financial Network</button>
+    <button class="sw-btn" data-case="C-2026-0371">C-2026-0371 · NCR Vehicle Theft Ring</button>
+  </div>
+
+  <!-- Case Banner -->
+  <div class="case-banner" id="caseBanner">
+    <div class="banner-photo" id="bannerPhoto"></div>
+    <div class="banner-info">
+      <div>
+        <div class="banner-top-row">
+          <span class="priority-badge" id="priorityBadge"></span>
+          <span class="banner-case-id" id="bannerCaseId"></span>
+        </div>
+        <div class="banner-title" id="bannerTitle"></div>
+        <div class="banner-desc" id="bannerDesc"></div>
+      </div>
+      <div class="banner-meta" id="bannerMeta"></div>
+    </div>
+    <div class="banner-actions">
+      <button class="btn-outline" id="shareBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-3.8M8.6 13.4l6.8 3.8"/></svg>
+        Share Case
+      </button>
+      <button class="btn-outline" id="exportBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+        Export
+      </button>
+      <button class="btn-solid" id="analyzeBtn">
+        Analyze Network
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar" id="tabBar">
+    <div class="tab-item active" data-tab="overview">Overview</div>
+    <div class="tab-item" data-tab="entities">Entities</div>
+    <div class="tab-item" data-tab="evidence">Evidence</div>
+    <div class="tab-item" data-tab="timeline">Timeline</div>
+    <div class="tab-item" data-tab="ai">AI Insights</div>
+    <div class="tab-item" data-tab="reports">Reports</div>
+  </div>
+
+  <!-- Overview tab -->
+  <div class="tab-panel show" id="tab-overview">
+
+    <div class="overview-grid">
+      <!-- Case Overview -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>CASE OVERVIEW</h3>
+          <button class="icon-btn-sm" id="editOverviewBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+            Edit
+          </button>
+        </div>
+        <div class="info-list" id="infoList"></div>
+      </div>
+
+      <!-- Key Statistics -->
+      <div class="panel">
+        <div class="panel-head"><h3>KEY STATISTICS</h3></div>
+        <div class="stats-grid-2x3" id="statsGrid"></div>
+      </div>
+    </div>
+
+    <div class="overview-grid" style="margin-bottom:16px;">
+      <!-- Timeline -->
+      <div class="panel" style="grid-column:span 1;">
+        <div class="panel-head">
+          <h3>CASE TIMELINE</h3>
+          <a class="link-btn" id="viewFullTimeline">View Full Timeline →</a>
+        </div>
+        <div class="timeline-list" id="timelineList"></div>
+      </div>
+
+      <!-- (kept empty to preserve 2-col rhythm on wide screens; stats panel above is taller) -->
+      <div></div>
+    </div>
+
+    <div class="bottom-grid">
+      <!-- Evidence -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>ASSOCIATED EVIDENCE (SAMPLE)</h3>
+          <a class="link-btn" id="viewAllEvidence">View All →</a>
+        </div>
+        <div class="evidence-row" id="evidenceRow"></div>
+      </div>
+
+      <!-- Notes -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>INVESTIGATION NOTES</h3>
+          <a class="link-btn" id="viewAllNotes">View All →</a>
+        </div>
+        <div class="notes-list" id="notesList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Placeholder tabs -->
+  <div class="tab-panel" id="tab-entities"><div class="placeholder-tab"><h2>ENTITIES</h2><p>Entity graph for this case will be built here next.</p></div></div>
+  <div class="tab-panel" id="tab-evidence"><div class="placeholder-tab"><h2>EVIDENCE</h2><p>Full evidence locker view coming soon.</p></div></div>
+  <div class="tab-panel" id="tab-timeline"><div class="placeholder-tab"><h2>TIMELINE</h2><p>Detailed case timeline view coming soon.</p></div></div>
+  <div class="tab-panel" id="tab-ai"><div class="placeholder-tab"><h2>AI INSIGHTS</h2><p>Pattern &amp; anomaly detection insights coming soon.</p></div></div>
+  <div class="tab-panel" id="tab-reports"><div class="placeholder-tab"><h2>REPORTS</h2><p>Case-specific reports view coming soon.</p></div></div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <span>SECURE GOVERNMENT NETWORK | UNAUTHORIZED ACCESS IS PROHIBITED</span>
+  <div class="footer-right">
+    <span class="system-online"><span class="pulse-dot"></span>SYSTEM ONLINE</span>
+    <span id="liveClock"></span>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="evidenceModal">
+  <div class="modal-box">
+    <div class="modal-img" id="modalImg"></div>
+    <div class="modal-body">
+      <h3 id="modalFilename"></h3>
+      <p id="modalCaption"></p>
+      <button class="modal-close" id="modalCloseBtn">Close Preview</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= DATA ================= */
+const PRIORITY_COLOR = {high:'var(--red)', active:'var(--green)', monitoring:'var(--amber)'};
+const PRIORITY_BG   = {high:'var(--red-dim)', active:'var(--green-dim)', monitoring:'var(--amber-dim)'};
+const STATUS_COLOR  = {ACTIVE:'var(--green)', MONITORING:'var(--amber)', CLOSED:'var(--grey)'};
+
+const CASES = [
+  {
+    id:'C-2026-0412',
+    priority:'high', priorityLabel:'HIGH PRIORITY',
+    title:'Metro Arms Supply Network',
+    subtitle:'Illegal arms procurement and distribution network operating across multiple states.',
+    category:'Organized Crime',
+    agency:'Delhi Police (Special Cell)',
+    date:'08 Sep 2026',
+    status:'ACTIVE',
+    officer:'Insp. A. Sharma',
+    relatedStates:'Delhi, Rajasthan, Uttar Pradesh',
+    briefDescription:'Investigation into a coordinated network procuring illegal firearms from cross-border sources and distributing them through a chain of intermediaries across the NCR region and neighbouring states. Financial trail suggests structured payments routed through shell accounts.',
+    bannerImage:'https://images.unsplash.com/photo-1595590424283-b8f17842773f?w=1200&q=70&auto=format&fit=crop',
+    bannerPhrase:'ARMS FUEL CRIME',
+    stats:[
+      {label:'Suspects', value:18, color:'var(--red)', bg:'var(--red-dim)', icon:'person'},
+      {label:'Organizations', value:4, color:'var(--amber)', bg:'var(--amber-dim)', icon:'group'},
+      {label:'Phone Numbers', value:31, color:'var(--blue)', bg:'var(--blue-dim)', icon:'phone'},
+      {label:'Locations', value:12, color:'var(--green)', bg:'var(--green-dim)', icon:'pin'},
+      {label:'Financial Transactions', value:67, color:'var(--amber)', bg:'var(--amber-dim)', icon:'rupee'},
+      {label:'Related FIRs', value:6, color:'var(--purple)', bg:'var(--purple-dim)', icon:'doc'},
+    ],
+    timeline:[
+      {date:'08 Sep 2026', text:'Case registered (FIR No. 328/2026)', flag:false},
+      {date:'10 Sep 2026', text:'First set of CDRs analyzed', flag:false},
+      {date:'12 Sep 2026', text:'Suspicious financial transactions detected', flag:true},
+      {date:'14 Sep 2026', text:'Key suspect identified: Rakesh Malhotra', flag:true},
+      {date:'16 Sep 2026', text:'Link established with cross-border entity', flag:true},
+    ],
+    evidence:[
+      {file:'IMG_4487.jpg', caption:'Seized arms (Delhi)', type:'image', thumb:'https://images.unsplash.com/photo-1584824388878-07dfdf62e132?w=400&q=60&auto=format&fit=crop'},
+      {file:'FIR_328_2026.pdf', caption:'FIR Copy', type:'pdf', thumb:''},
+      {file:'CDR_Suspects.csv', caption:'Call Detail Records', type:'csv', thumb:''},
+      {file:'Txn_Report.pdf', caption:'Suspicious Transactions', type:'pdf', thumb:''},
+      {file:'CCTV_14Sep.mp4', caption:'Warehouse (Noida)', type:'video', thumb:'https://images.unsplash.com/photo-1605152276897-4f618f831968?w=400&q=60&auto=format&fit=crop'},
+    ],
+    notes:[
+      {name:'Insp. A. Sharma', initials:'AS', color:'var(--cyan)', time:'16 Sep 2026, 11:20', text:'Rakesh Malhotra appears to be a key coordinator. Multiple links with suppliers in Rajasthan. Verify financial trail.'},
+      {name:'SI P. Verma', initials:'PV', color:'var(--blue)', time:'14 Sep 2026, 18:45', text:'CDR analysis shows repeated communication between R. Malhotra and Imran Qureshi (Jaipur).'},
+    ]
+  },
+  {
+    id:'C-2026-0398',
+    priority:'active', priorityLabel:'ACTIVE',
+    title:'Hawala Financial Network',
+    subtitle:'Unregistered cross-border money transfer network suspected of laundering proceeds of crime.',
+    category:'Financial Crime',
+    agency:'Enforcement Directorate (Delhi Zone)',
+    date:'07 Sep 2026',
+    status:'ACTIVE',
+    officer:'Insp. A. Sharma',
+    relatedStates:'Delhi, Maharashtra, Gujarat',
+    briefDescription:'Multiple hawala operators identified moving large sums outside formal banking channels. Transaction structuring patterns match known laundering signatures; several accounts already flagged by the Financial Intelligence Unit for further scrutiny.',
+    bannerImage:'https://images.unsplash.com/photo-1591696205602-2f950c417cb9?w=1200&q=70&auto=format&fit=crop',
+    bannerPhrase:'FOLLOW THE MONEY',
+    stats:[
+      {label:'Suspects', value:9, color:'var(--red)', bg:'var(--red-dim)', icon:'person'},
+      {label:'Organizations', value:7, color:'var(--amber)', bg:'var(--amber-dim)', icon:'group'},
+      {label:'Phone Numbers', value:22, color:'var(--blue)', bg:'var(--blue-dim)', icon:'phone'},
+      {label:'Locations', value:8, color:'var(--green)', bg:'var(--green-dim)', icon:'pin'},
+      {label:'Financial Transactions', value:214, color:'var(--amber)', bg:'var(--amber-dim)', icon:'rupee'},
+      {label:'Related FIRs', value:3, color:'var(--purple)', bg:'var(--purple-dim)', icon:'doc'},
+    ],
+    timeline:[
+      {date:'07 Sep 2026', text:'Case registered (FIR No. 311/2026)', flag:false},
+      {date:'09 Sep 2026', text:'Bank statements requisitioned from 3 branches', flag:false},
+      {date:'11 Sep 2026', text:'₹48,00,000 structured transaction flagged', flag:true},
+      {date:'13 Sep 2026', text:'Hawala operator network mapped (Delhi-Mumbai leg)', flag:true},
+      {date:'15 Sep 2026', text:'FIU-IND cross-reference confirms prior flags', flag:true},
+    ],
+    evidence:[
+      {file:'Txn_Ledger_Sep.csv', caption:'Structured transaction ledger', type:'csv', thumb:''},
+      {file:'FIR_311_2026.pdf', caption:'FIR Copy', type:'pdf', thumb:''},
+      {file:'Bank_Stmt_HDFC.pdf', caption:'Account statement extract', type:'pdf', thumb:''},
+      {file:'IMG_5102.jpg', caption:'Hawala ledger book (seized)', type:'image', thumb:'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=60&auto=format&fit=crop'},
+      {file:'Interview_09Sep.mp4', caption:'Operator interview (Karol Bagh)', type:'video', thumb:'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&q=60&auto=format&fit=crop'},
+    ],
+    notes:[
+      {name:'Insp. A. Sharma', initials:'AS', color:'var(--cyan)', time:'15 Sep 2026, 20:05', text:'FIU-IND confirms this operator was flagged twice before under a different alias. Escalate for asset freeze request.'},
+      {name:'SI R. Nair', initials:'RN', color:'var(--blue)', time:'13 Sep 2026, 15:30', text:'Mumbai leg of the network traced to a jewellery-shop front. Coordinating with Mumbai EZ for joint action.'},
+    ]
+  },
+  {
+    id:'C-2026-0371',
+    priority:'active', priorityLabel:'ACTIVE',
+    title:'NCR Vehicle Theft Ring',
+    subtitle:'Organized vehicle theft and re-registration racket operating across the Delhi NCR region.',
+    category:'Organized Crime',
+    agency:'Delhi Police (Crime Branch)',
+    date:'05 Sep 2026',
+    status:'ACTIVE',
+    officer:'Insp. A. Sharma',
+    relatedStates:'Delhi, Haryana, Uttar Pradesh',
+    briefDescription:'Vehicles reported stolen across NCR are being re-registered with forged documents through a small network of complicit RTO agents, then resold through classified listings. Pattern analysis links 12 recovered vehicles to a single distribution chain.',
+    bannerImage:'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&q=70&auto=format&fit=crop',
+    bannerPhrase:'STOLEN & RESOLD',
+    stats:[
+      {label:'Suspects', value:11, color:'var(--red)', bg:'var(--red-dim)', icon:'person'},
+      {label:'Organizations', value:2, color:'var(--amber)', bg:'var(--amber-dim)', icon:'group'},
+      {label:'Phone Numbers', value:17, color:'var(--blue)', bg:'var(--blue-dim)', icon:'phone'},
+      {label:'Locations', value:15, color:'var(--green)', bg:'var(--green-dim)', icon:'pin'},
+      {label:'Financial Transactions', value:29, color:'var(--amber)', bg:'var(--amber-dim)', icon:'rupee'},
+      {label:'Related FIRs', value:9, color:'var(--purple)', bg:'var(--purple-dim)', icon:'doc'},
+    ],
+    timeline:[
+      {date:'05 Sep 2026', text:'Case registered (FIR No. 294/2026)', flag:false},
+      {date:'06 Sep 2026', text:'First recovered vehicle traced to forged RC', flag:false},
+      {date:'08 Sep 2026', text:'Complicit RTO agent identified in Ghaziabad', flag:true},
+      {date:'11 Sep 2026', text:'Classified-ad resale pattern confirmed', flag:false},
+      {date:'13 Sep 2026', text:'Second theft cluster linked (Gurugram)', flag:true},
+    ],
+    evidence:[
+      {file:'IMG_3390.jpg', caption:'Recovered vehicle (Ghaziabad)', type:'image', thumb:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=60&auto=format&fit=crop'},
+      {file:'FIR_294_2026.pdf', caption:'FIR Copy', type:'pdf', thumb:''},
+      {file:'RC_Forgery_Report.pdf', caption:'Forensic document analysis', type:'pdf', thumb:''},
+      {file:'Resale_Listings.csv', caption:'Classified ad cross-match', type:'csv', thumb:''},
+      {file:'CCTV_11Sep.mp4', caption:'RTO office (Ghaziabad)', type:'video', thumb:'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=400&q=60&auto=format&fit=crop'},
+    ],
+    notes:[
+      {name:'Insp. A. Sharma', initials:'AS', color:'var(--cyan)', time:'13 Sep 2026, 09:40', text:'Gurugram cluster shares the same forged-stamp signature as Ghaziabad. Likely the same document forger.'},
+      {name:'SI K. Yadav', initials:'KY', color:'var(--blue)', time:'11 Sep 2026, 17:10', text:'Cross-matched 4 classified listings to recovered VINs. Buyer follow-up pending.'},
+    ]
+  },
+];
+
+const urlParams = new URLSearchParams(window.location.search);
+const requestedCaseId = urlParams.get('case');
+let currentCaseId = CASES.some(c => c.id === requestedCaseId) ? requestedCaseId : CASES[0].id;
+/* ================= ICONS ================= */
+const STAT_ICONS = {
+  person:'<path d="M9 8a3.2 3.2 0 100-6.4A3.2 3.2 0 009 8z"/><path d="M2.5 15c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" stroke-linecap="round"/>',
+  group:'<circle cx="6" cy="6.5" r="2.6"/><circle cx="13" cy="6.5" r="2.6"/><path d="M1.5 15c0-2.9 2-4.8 4.5-4.8M12 10.2c2.5 0 4.5 1.9 4.5 4.8"/>',
+  phone:'<path d="M4 2h3l1.5 4-2 1.5a10 10 0 004.5 4.5L12.5 10l4 1.5V15a1.5 1.5 0 01-1.6 1.5C8.6 15.9 2.6 9.9 2.5 3.6A1.5 1.5 0 014 2z"/>',
+  pin:'<path d="M9 17s6-5.7 6-10a6 6 0 10-12 0c0 4.3 6 10 6 10z"/><circle cx="9" cy="7" r="2.3"/>',
+  rupee:'<path d="M4 3h10M4 7h10M4 3c3.5 0 6 1.6 6 4s-2.5 4-6 4h-.5L11 17" stroke-linecap="round" stroke-linejoin="round"/>',
+  doc:'<path d="M4.5 1.5h6l3.5 3.5V16a1 1 0 01-1 1h-8.5a1 1 0 01-1-1V2.5a1 1 0 011-1z"/><path d="M10.5 1.5V5H14"/>',
+};
+const FILE_ICONS = {
+  image:{color:'var(--blue)', bg:'var(--blue-dim)', svg:'<path d="M2 4a1 1 0 011-1h9a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/><circle cx="5.2" cy="6" r="1.1"/><path d="M2.5 9.5l2.8-2.8 2 2 1.8-1.8L13 10.5"/>'},
+  pdf:{color:'var(--red)', bg:'var(--red-dim)', svg:'<path d="M3.5 1h5.5l3 3v9a1 1 0 01-1 1h-7.5a1 1 0 01-1-1V2a1 1 0 011-1z"/><path d="M9 1v3h3"/>'},
+  csv:{color:'var(--green)', bg:'var(--green-dim)', svg:'<rect x="2" y="2" width="10" height="10" rx="1"/><path d="M2 5.3h10M2 8.6h10M5.3 2v10M8.6 2v10"/>'},
+  video:{color:'var(--purple)', bg:'var(--purple-dim)', svg:'<rect x="1.5" y="3" width="9" height="8" rx="1.2"/><path d="M10.5 6l4-2.3v6.6l-4-2.3z"/>'},
+};
+
+/* ================= TOAST ================= */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ================= RENDER ================= */
+function renderCase(caseId){
+  const c = CASES.find(x=>x.id===caseId);
+  if(!c) return;
+  currentCaseId = caseId;
+
+  document.querySelectorAll('.sw-btn').forEach(b=> b.classList.toggle('active', b.dataset.case===caseId));
+
+  document.getElementById('priorityBadge').textContent = c.priorityLabel;
+  document.getElementById('priorityBadge').style.color = PRIORITY_COLOR[c.priority];
+  document.getElementById('priorityBadge').style.background = PRIORITY_BG[c.priority];
+  document.getElementById('bannerCaseId').textContent = c.id;
+  document.getElementById('bannerTitle').textContent = c.title;
+  document.getElementById('bannerDesc').textContent = c.subtitle;
+  document.getElementById('bannerPhoto').style.backgroundImage = `linear-gradient(100deg, rgba(9,13,19,0.55), rgba(9,13,19,0.15)), url('${c.bannerImage}')`;
+  document.getElementById('bannerPhoto').setAttribute('data-phrase', c.bannerPhrase);
+
+  document.getElementById('bannerMeta').innerHTML = `
+    <div class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5"/></svg>${c.category}</div>
+    <div class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3.5v6C20 17 16.5 20.5 12 22c-4.5-1.5-8-5-8-10.5v-6z"/></svg>${c.agency}</div>
+    <div class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>${c.date}</div>
+    <div class="meta-item"><span class="meta-status-dot" style="background:${STATUS_COLOR[c.status]}"></span>${c.status}</div>
+    <div class="meta-item">Investigating Officer: ${c.officer}</div>
+  `;
+
+  document.getElementById('infoList').innerHTML = `
+    <div class="info-row"><span class="info-label">Case ID</span><span class="info-value">${c.id}</span></div>
+    <div class="info-row"><span class="info-label">Case Name</span><span class="info-value">${c.title}</span></div>
+    <div class="info-row"><span class="info-label">Case Type</span><span class="info-value">${c.category}</span></div>
+    <div class="info-row"><span class="info-label">Priority</span><span class="info-value with-dot"><span class="dot-sm" style="background:${PRIORITY_COLOR[c.priority]}"></span>${c.priorityLabel}</span></div>
+    <div class="info-row"><span class="info-label">Status</span><span class="info-value with-dot"><span class="dot-sm" style="background:${STATUS_COLOR[c.status]}"></span>${c.status}</span></div>
+    <div class="info-row"><span class="info-label">Date Registered</span><span class="info-value">${c.date}</span></div>
+    <div class="info-row"><span class="info-label">Investigating Agency</span><span class="info-value">${c.agency}</span></div>
+    <div class="info-row"><span class="info-label">Lead Officer</span><span class="info-value">${c.officer}</span></div>
+    <div class="info-row"><span class="info-label">Related States</span><span class="info-value">${c.relatedStates}</span></div>
+    <div class="brief-desc">
+      <div class="info-label">Brief Description</div>
+      <p>${c.briefDescription}</p>
+    </div>
+  `;
+
+  document.getElementById('statsGrid').innerHTML = c.stats.map(s=>`
+    <div class="stat-tile">
+      <div class="stat-tile-icon" style="background:${s.bg}; color:${s.color};">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">${STAT_ICONS[s.icon]}</svg>
+      </div>
+      <div class="stat-tile-num">${s.value}</div>
+      <div class="stat-tile-label">${s.label}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('timelineList').innerHTML = c.timeline.map(t=>`
+    <div class="tl-row">
+      <span class="tl-dot" style="background:${t.flag ? 'var(--amber)' : 'var(--green)'}"></span>
+      <div class="tl-body">
+        <div class="tl-date">${t.date}</div>
+        <div class="tl-desc">${t.text}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('evidenceRow').innerHTML = c.evidence.map((e,i)=>{
+    const fi = FILE_ICONS[e.type];
+    const thumbStyle = e.thumb ? `background-image:url('${e.thumb}')` : '';
+    const inner = e.type==='video'
+      ? `<div class="ev-play"><svg viewBox="0 0 14 14" fill="white"><polygon points="4,2 12,7 4,12"/></svg></div>`
+      : (!e.thumb ? `<svg viewBox="0 0 18 18" fill="none" stroke="${fi.color}" stroke-width="1.3" width="30" height="30" opacity="0.55">${fi.svg}</svg>` : '');
+    return `
+    <div class="evidence-card" data-idx="${i}">
+      <div class="ev-thumb" style="${thumbStyle}">
+        <div class="ev-type-badge" style="background:${fi.bg}; color:${fi.color};">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">${fi.svg}</svg>
+        </div>
+        ${inner}
+      </div>
+      <div class="ev-info">
+        <div class="ev-filename">${e.file}</div>
+        <div class="ev-caption">${e.caption}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.evidence-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const e = c.evidence[card.dataset.idx];
+      document.getElementById('modalImg').style.backgroundImage = e.thumb ? `url('${e.thumb}')` : 'linear-gradient(135deg, var(--panel-2), var(--bg-raised))';
+      document.getElementById('modalFilename').textContent = e.file;
+      document.getElementById('modalCaption').textContent = e.caption + ' — preview placeholder.';
+      document.getElementById('evidenceModal').classList.add('open');
+    });
+  });
+
+  document.getElementById('notesList').innerHTML = c.notes.map(n=>`
+    <div class="note-row">
+      <div class="note-avatar" style="background:${n.color};">${n.initials}</div>
+      <div class="note-body">
+        <div class="note-head"><span class="note-name">${n.name}</span><span class="note-time">${n.time}</span></div>
+        <div class="note-text">${n.text}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ================= CASE SWITCHER ================= */
+document.querySelectorAll('.sw-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    renderCase(btn.dataset.case);
+    document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+    document.querySelector('.tab-item[data-tab="overview"]').classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('show'));
+    document.getElementById('tab-overview').classList.add('show');
+  });
+});
+
+/* ================= TABS ================= */
+document.querySelectorAll('.tab-item').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('show'));
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('show');
+  });
+});
+
+/* ================= BANNER ACTIONS ================= */
+document.getElementById('shareBtn').addEventListener('click', ()=> showToast(`Share link generated for ${currentCaseId} (placeholder).`));
+document.getElementById('exportBtn').addEventListener('click', ()=> showToast(`Exporting ${currentCaseId} case file... (placeholder)`));
+document.getElementById('analyzeBtn').addEventListener('click', ()=> {
+  window.location.href = `networkanalysis.html?case=${encodeURIComponent(currentCaseId)}`;
+});
+document.getElementById('editOverviewBtn').addEventListener('click', ()=> showToast('Edit case overview — placeholder.'));
+document.getElementById('viewFullTimeline').addEventListener('click', ()=> showToast('Opening full timeline view... (placeholder)'));
+document.getElementById('viewAllEvidence').addEventListener('click', ()=> showToast('Opening full evidence locker... (placeholder)'));
+document.getElementById('viewAllNotes').addEventListener('click', ()=> showToast('Opening all investigation notes... (placeholder)'));
+
+/* ================= EVIDENCE MODAL ================= */
+document.getElementById('modalCloseBtn').addEventListener('click', ()=> document.getElementById('evidenceModal').classList.remove('open'));
+document.getElementById('evidenceModal').addEventListener('click', e=>{ if(e.target.id==='evidenceModal') e.currentTarget.classList.remove('open'); });
+
+/* ================= HEADER DROPDOWNS ================= */
+function toggleDropdown(btnId, panelId){
+  const btn = document.getElementById(btnId);
+  const panel = document.getElementById(panelId);
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-panel.open').forEach(p=>{ if(p!==panel) p.classList.remove('open'); });
+    panel.classList.toggle('open');
+  });
+}
+toggleDropdown('notifBtn','notifPanel');
+toggleDropdown('profileBtn','profilePanel');
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.dropdown-panel.open').forEach(p=>p.classList.remove('open'));
+});
+document.querySelectorAll('#profilePanel .menu-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const action = item.dataset.action;
+    if(action==='logout'){ showToast('Logging out... (placeholder)'); }
+    else if(action==='profile'){ showToast('Opening profile... (placeholder)'); }
+    else { showToast('Opening settings... (placeholder)'); }
+  });
+});
+document.getElementById('globalSearchBtn').addEventListener('click', doGlobalSearch);
+document.getElementById('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') doGlobalSearch(); });
+function doGlobalSearch(){
+  const q = document.getElementById('globalSearch').value.trim();
+  showToast(q ? `Searching for "${q}"... (placeholder)` : 'Enter a search term.');
+}
+
+/* ================= LIVE CLOCK ================= */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function updateClock(){
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('liveClock').textContent = `${dateStr} | ${timeStr}`;
+}
+updateClock();
+setInterval(updateClock, 1000*15);
+
+/* ================= INIT ================= */
+renderCase(currentCaseId);
+</script>
+</body>
+</html>

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Network Analysis | Criminal Network Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-raised:#0d1219;
+    --panel:#0f151f;
+    --panel-2:#111926;
+    --border:rgba(148,169,199,0.12);
+    --border-strong:rgba(148,169,199,0.22);
+    --text:#dbe4f0;
+    --text-dim:#8593a8;
+    --text-faint:#57667c;
+    --cyan:#2fd4e8;
+    --cyan-dim:rgba(47,212,232,0.14);
+    --blue:#4a8fe7;
+    --blue-dim:rgba(74,143,231,0.14);
+    --red:#ef4a5f;
+    --red-dim:rgba(239,74,95,0.14);
+    --amber:#f0a23c;
+    --amber-dim:rgba(240,162,60,0.14);
+    --yellow:#e8d24a;
+    --yellow-dim:rgba(232,210,74,0.14);
+    --green:#3ccb7f;
+    --green-dim:rgba(60,203,127,0.14);
+    --grey:#6b7686;
+    --grey-dim:rgba(107,118,134,0.14);
+    --purple:#9b7de0;
+    --purple-dim:rgba(155,125,224,0.14);
+    --font-head:'Oswald',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --header-h:76px;
+    --sidebar-w:220px;
+    --sidebar-w-collapsed:72px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(47,212,232,0.05), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(74,143,231,0.05), transparent 45%);
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#26303f; border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:#334152;}
+
+  /* ---------------- HEADER ---------------- */
+  .header{
+    position:fixed; top:0; left:0; right:0; height:var(--header-h);
+    background:linear-gradient(180deg,#0c1119 0%, #0a0e14 100%);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center;
+    padding:0 20px;
+    gap:20px;
+    z-index:100;
+  }
+  .header-left{ display:flex; align-items:center; gap:12px; min-width:300px; }
+  .emblem{
+    width:42px; height:42px; border-radius:50%;
+    border:1.5px solid var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle, rgba(47,212,232,0.12), transparent 70%);
+    flex-shrink:0;
+  }
+  .emblem svg{width:24px; height:24px;}
+  .header-titles{line-height:1.25;}
+  .header-titles .t1{font-family:var(--font-head); font-weight:600; font-size:15.5px; letter-spacing:0.4px; color:#f0f4fa;}
+  .header-titles .t2{font-family:var(--font-mono); font-size:10px; color:var(--text-faint); letter-spacing:0.6px; margin-top:2px;}
+  .header-center{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; max-width:640px; margin:0 auto; }
+  .tagline{font-family:var(--font-mono); font-size:10px; color:var(--cyan); letter-spacing:2px; opacity:0.85;}
+  .search-bar{ width:100%; display:flex; align-items:center; background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:0 4px 0 12px; height:34px; transition:border-color .15s; }
+  .search-bar:focus-within{border-color:var(--cyan);}
+  .search-bar input{ flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:12.5px; font-family:var(--font-body); height:100%; }
+  .search-bar input::placeholder{color:var(--text-faint);}
+  .search-bar button{ background:var(--cyan-dim); border:none; border-radius:4px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; color:var(--cyan); flex-shrink:0; }
+  .search-bar button:hover{background:rgba(47,212,232,0.25);}
+  .header-right{ display:flex; align-items:center; gap:18px; min-width:280px; justify-content:flex-end; }
+  .icon-btn{ position:relative; width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:center; color:var(--text-dim); }
+  .icon-btn:hover{border-color:var(--border-strong); color:var(--text);}
+  .badge{ position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; font-size:9.5px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px; border:1.5px solid var(--bg); font-family:var(--font-mono); }
+  .dropdown-wrap{position:relative;}
+  .dropdown-panel{ position:absolute; top:46px; right:0; width:300px; background:var(--panel-2); border:1px solid var(--border-strong); border-radius:10px; box-shadow:0 16px 40px rgba(0,0,0,0.5); padding:8px; display:none; z-index:200; }
+  .dropdown-panel.open{display:block;}
+  .dropdown-title{font-family:var(--font-head); font-size:11px; letter-spacing:1px; color:var(--text-dim); padding:8px 10px 6px;}
+  .notif-item{display:flex; gap:10px; padding:9px 10px; border-radius:7px;}
+  .notif-item:hover{background:var(--bg-raised);}
+  .notif-dot{width:7px; height:7px; border-radius:50%; margin-top:6px; flex-shrink:0;}
+  .notif-body b{display:block; font-size:12.5px; color:var(--text); font-weight:600;}
+  .notif-body span{font-size:11px; color:var(--text-faint);}
+  .profile{ display:flex; align-items:center; gap:9px; padding:5px 9px 5px 5px; border-radius:9px; border:1px solid var(--border); background:var(--panel); }
+  .profile:hover{border-color:var(--border-strong);}
+  .avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--cyan),var(--blue)); display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-weight:600; font-size:12.5px; color:#04141a; }
+  .profile-text{line-height:1.2;}
+  .profile-text .pname{font-size:12px; font-weight:600; color:var(--text);}
+  .profile-text .prole{font-size:10px; color:var(--text-faint);}
+  .chev{color:var(--text-faint); font-size:9px; margin-left:2px;}
+  .menu-item{ display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:7px; font-size:12.5px; color:var(--text-dim); }
+  .menu-item:hover{background:var(--bg-raised); color:var(--text);}
+  .menu-item.danger:hover{color:var(--red);}
+  .menu-divider{height:1px; background:var(--border); margin:6px 2px;}
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar{ position:fixed; top:var(--header-h); left:0; bottom:0; width:var(--sidebar-w); background:var(--bg-raised); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:90; }
+  .nav-list{padding:14px 10px; display:flex; flex-direction:column; gap:3px; flex:1;}
+  .nav-item{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; color:var(--text-dim); font-size:12.8px; font-weight:500; border:1px solid transparent; position:relative; }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:var(--panel); color:var(--text);}
+  .nav-item.active{ background:var(--cyan-dim); color:var(--cyan); border-color:rgba(47,212,232,0.35); }
+  .nav-item.active::before{ content:""; position:absolute; left:-10px; top:50%; transform:translateY(-50%); width:3px; height:60%; background:var(--cyan); border-radius:0 3px 3px 0; }
+  .sidebar-footer{ position:relative; height:150px; border-top:1px solid var(--border); display:flex; align-items:flex-end; justify-content:center; overflow:hidden; padding:14px 10px 16px; background:radial-gradient(ellipse at bottom, rgba(47,212,232,0.06), transparent 70%); }
+  .gov-silhouette{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); width:120px; height:74px; opacity:0.16; filter:brightness(1.4); }
+  .sidebar-footer-text{ position:relative; z-index:2; text-align:center; font-family:var(--font-mono); font-size:8.6px; letter-spacing:1px; color:var(--text-faint); line-height:1.6; }
+  .tricolor-line{ position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#ff9933 0%, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%, #138808 100%); }
+
+  /* ---------------- LAYOUT ---------------- */
+  .app-main{ margin-left:var(--sidebar-w); margin-top:var(--header-h); padding:18px 24px 70px; min-height:calc(100vh - var(--header-h)); position:relative; z-index:1; }
+
+  .page-head-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .page-head-left{display:flex; flex-direction:column; gap:6px;}
+  .back-link{ display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--text-dim); font-weight:500; }
+  .back-link:hover{color:var(--cyan);}
+  .back-link svg{width:14px; height:14px;}
+  .case-title-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .case-title-row h1{font-family:var(--font-head); font-size:23px; font-weight:600; color:#f4f8fc; letter-spacing:0.3px;}
+  .case-id-sub{font-family:var(--font-mono); font-size:12px; color:var(--text-faint);}
+  .priority-badge{ font-family:var(--font-mono); font-size:10.5px; font-weight:700; letter-spacing:0.6px; padding:4px 10px; border-radius:5px; color:var(--red); background:var(--red-dim); }
+  .status-chip{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-dim); font-weight:600;}
+  .status-chip .dot{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 3px rgba(60,203,127,0.18);}
+
+  /* ---- tabs + toolbar ---- */
+  .tab-toolbar-row{ display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .tab-bar{display:flex; gap:4px;}
+  .tab-item{ padding:11px 16px; font-size:12.5px; font-weight:600; color:var(--text-faint); border-bottom:2px solid transparent; white-space:nowrap; }
+  .tab-item:hover{color:var(--text-dim);}
+  .tab-item.active{color:var(--cyan); border-bottom-color:var(--cyan);}
+  .toolbar-actions{display:flex; align-items:center; gap:10px; padding-bottom:10px;}
+  .filters-wrap{position:relative;}
+  .filters-btn{ display:flex; align-items:center; gap:7px; background:var(--panel); border:1px solid var(--border); border-radius:7px; padding:8px 13px; font-size:11.8px; font-weight:600; color:var(--text-dim); }
+  .filters-btn:hover{border-color:var(--border-strong); color:var(--text);}
+  .filters-btn svg{width:13px; height:13px;}
+  .filters-panel{ position:absolute; top:42px; right:0; width:240px; background:var(--panel-2); border:1px solid var(--border-strong); border-radius:10px; box-shadow:0 16px 40px rgba(0,0,0,0.5); padding:12px; display:none; z-index:150; }
+  .filters-panel.open{display:block;}
+  .filters-group{margin-bottom:12px;}
+  .filters-group:last-child{margin-bottom:0;}
+  .filters-group-title{font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.8px; color:var(--text-faint); margin-bottom:7px;}
+  .filter-check{display:flex; align-items:center; gap:8px; padding:5px 2px; font-size:12px; color:var(--text-dim); cursor:pointer;}
+  .filter-check input{accent-color:var(--cyan); width:13px; height:13px; cursor:pointer;}
+  .filter-check .sw{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .fullscreen-btn{ width:34px; height:34px; border-radius:7px; border:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:center; color:var(--text-dim); margin-bottom:10px; }
+  .fullscreen-btn:hover{border-color:var(--cyan); color:var(--cyan);}
+  .fullscreen-btn svg{width:15px; height:15px;}
+
+  /* ---- main grid ---- */
+  .graph-grid{ display:grid; grid-template-columns:1fr 340px; gap:16px; margin-bottom:16px; align-items:start; }
+
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:12px;}
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 17px; border-bottom:1px solid var(--border); }
+  .panel-head h3{font-family:var(--font-head); font-size:12px; font-weight:600; letter-spacing:0.8px; color:var(--text);}
+  .link-btn{font-size:11.5px; color:var(--cyan); font-weight:500;}
+  .link-btn:hover{text-decoration:underline;}
+
+  /* ---- graph panel ---- */
+  .graph-card{ position:relative; height:640px; overflow:hidden; }
+  .graph-card.fullscreen{ position:fixed; inset:14px; height:auto; z-index:400; box-shadow:0 30px 90px rgba(0,0,0,0.7); }
+  .graph-canvas-wrap{ position:relative; width:100%; height:100%; cursor:grab; }
+  .graph-canvas-wrap.panning{cursor:grabbing;}
+  .graph-canvas-wrap svg{ width:100%; height:100%; display:block; }
+
+  .graph-legend{ position:absolute; top:14px; left:14px; z-index:20; background:rgba(13,18,25,0.88); border:1px solid var(--border-strong); border-radius:10px; padding:12px 13px; font-size:10.8px; color:var(--text-dim); backdrop-filter:blur(6px); width:150px; }
+  .legend-row{display:flex; align-items:center; gap:8px; padding:3px 0;}
+  .legend-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .legend-sep{height:1px; background:var(--border); margin:8px 0;}
+  .legend-line-row{display:flex; align-items:center; gap:8px; padding:3px 0;}
+  .legend-line{width:20px; height:0; border-top:2px solid var(--text-dim); flex-shrink:0;}
+  .legend-line.dash{border-top-style:dashed;}
+  .legend-line.dot{border-top-style:dotted; border-top-width:2.4px;}
+  .legend-line.assoc{border-top-style:dashed; border-top-color:var(--purple);}
+
+  .graph-toolbar{ position:absolute; bottom:14px; right:14px; z-index:20; display:flex; flex-direction:column; background:var(--panel-2); border:1px solid var(--border-strong); border-radius:8px; overflow:hidden; }
+  .graph-toolbar button{ width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:16px; font-weight:600; border-bottom:1px solid var(--border); }
+  .graph-toolbar button:last-child{border-bottom:none;}
+  .graph-toolbar button:hover{background:var(--bg-raised); color:var(--cyan);}
+  .graph-toolbar button svg{width:14px; height:14px;}
+
+  .minimap{ position:absolute; bottom:14px; right:56px; width:150px; height:100px; background:rgba(13,18,25,0.88); border:1px solid var(--border-strong); border-radius:8px; z-index:20; overflow:hidden; }
+  .minimap svg{width:100%; height:100%;}
+
+  .node-label{ font-family:var(--font-body); font-size:10px; font-weight:600; fill:var(--text); pointer-events:none; text-anchor:middle; }
+  .node-sublabel{ font-family:var(--font-mono); font-size:8.5px; fill:var(--red); pointer-events:none; text-anchor:middle; letter-spacing:0.3px; }
+  .link-badge-bg{fill:var(--panel-2); stroke:var(--border-strong); stroke-width:1;}
+
+  /* ---- right column ---- */
+  .right-col{display:flex; flex-direction:column; gap:16px;}
+  .profile-panel-body{padding:16px 17px;}
+  .profile-head-row{display:flex; align-items:center; gap:12px;}
+  .profile-photo{ width:58px; height:58px; border-radius:50%; object-fit:cover; border:2px solid var(--border-strong); flex-shrink:0; background:var(--panel-2); }
+  .profile-name{font-family:var(--font-head); font-size:16px; font-weight:600; color:#f4f8fc;}
+  .profile-aka{font-size:10.8px; color:var(--text-faint); margin-top:2px;}
+  .risk-box{ display:flex; align-items:center; justify-content:space-between; background:var(--panel-2); border:1px solid var(--border); border-radius:9px; padding:11px 13px; margin-top:14px; }
+  .risk-label{font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.8px; color:var(--text-faint); margin-bottom:3px;}
+  .risk-value{font-family:var(--font-head); font-size:20px; font-weight:600; color:#f4f8fc;}
+  .risk-badge{font-family:var(--font-mono); font-size:10px; font-weight:700; padding:4px 9px; border-radius:5px;}
+  .risk-high{color:var(--red); background:var(--red-dim);}
+  .risk-medium{color:var(--amber); background:var(--amber-dim);}
+  .risk-low{color:var(--green); background:var(--green-dim);}
+
+  .info-section-title{font-family:var(--font-mono); font-size:10px; letter-spacing:0.8px; color:var(--text-faint); margin:16px 0 8px;}
+  .info-row2{display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--border);}
+  .info-row2:last-child{border-bottom:none;}
+  .info-row2-icon{ width:26px; height:26px; border-radius:7px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; color:var(--cyan); flex-shrink:0; }
+  .info-row2-icon svg{width:13px; height:13px;}
+  .info-row2-text .lbl{font-size:10px; color:var(--text-faint);}
+  .info-row2-text .val{font-size:12px; color:var(--text); font-weight:500; margin-top:2px; line-height:1.5;}
+  .info-row2-text .val small{color:var(--text-faint); font-weight:400;}
+
+  .view-profile-btn{ display:flex; align-items:center; justify-content:center; gap:7px; width:100%; margin-top:16px; padding:10px; background:var(--cyan-dim); border:1px solid rgba(47,212,232,0.35); border-radius:8px; color:var(--cyan); font-size:12px; font-weight:600; }
+  .view-profile-btn:hover{background:rgba(47,212,232,0.25);}
+
+  .qa-grid2{display:grid; grid-template-columns:1fr 1fr; gap:9px; padding:14px 17px;}
+  .qa-btn2{ background:var(--panel-2); border:1px solid var(--border); border-radius:9px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:7px; text-align:center; }
+  .qa-btn2:hover{border-color:var(--cyan); background:var(--cyan-dim);}
+  .qa-btn2 svg{width:17px; height:17px; color:var(--cyan);}
+  .qa-btn2 span{font-size:10.5px; font-weight:600; color:var(--text-dim);}
+  .qa-btn2:hover span{color:var(--text);}
+
+  /* ---- bottom row ---- */
+  .bottom-grid3{ display:grid; grid-template-columns:1fr 1.3fr 1fr; gap:16px; }
+
+  .ai-icon{ width:24px; height:24px; border-radius:7px; background:var(--cyan-dim); color:var(--cyan); display:flex; align-items:center; justify-content:center; }
+  .ai-icon svg{width:13px; height:13px;}
+  .panel-head-left{display:flex; align-items:center; gap:9px;}
+
+  .ai-list{padding:13px 17px; display:flex; flex-direction:column; gap:11px;}
+  .ai-item{display:flex; align-items:flex-start; gap:9px; font-size:12px; color:var(--text-dim); line-height:1.45;}
+  .ai-item .dot{width:7px; height:7px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+
+  .alerts-list2{padding:6px 8px; max-height:280px; overflow-y:auto;}
+  .alert-row2{display:flex; gap:10px; padding:10px; border-radius:8px;}
+  .alert-row2:hover{background:var(--panel-2);}
+  .alert-icon2{ width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .alert-icon2 svg{width:14px; height:14px;}
+  .alert-body2{flex:1; min-width:0;}
+  .alert-body2 .t{font-size:12px; font-weight:600; color:var(--text);}
+  .alert-body2 .d{font-size:10.8px; color:var(--text-faint); margin-top:2px;}
+  .alert-time2{font-family:var(--font-mono); font-size:9.5px; color:var(--text-faint); text-align:right; flex-shrink:0; white-space:nowrap;}
+
+  .conn-list{padding:6px 8px;}
+  .conn-row{display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:8px; cursor:pointer;}
+  .conn-row:hover{background:var(--panel-2);}
+  .conn-avatar{ width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; border:1.5px solid var(--border-strong); }
+  .conn-body{flex:1; min-width:0;}
+  .conn-body .n{font-size:12px; font-weight:600; color:var(--text);}
+  .conn-body .r{font-size:10.5px; color:var(--text-faint); margin-top:1px;}
+  .conn-score{ font-family:var(--font-mono); font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; color:var(--blue); background:var(--blue-dim); flex-shrink:0; }
+
+  /* ---------------- FOOTER ---------------- */
+  .footer{ position:fixed; bottom:0; left:var(--sidebar-w); right:0; height:36px; background:var(--bg-raised); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-family:var(--font-mono); font-size:10px; letter-spacing:0.5px; color:var(--text-faint); z-index:80; }
+  .footer-right{display:flex; align-items:center; gap:16px;}
+  .system-online{display:flex; align-items:center; gap:6px; color:var(--green);}
+  .pulse-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(60,203,127,0.55);} 70%{box-shadow:0 0 0 7px rgba(60,203,127,0);} 100%{box-shadow:0 0 0 0 rgba(60,203,127,0);} }
+
+  .toast{ position:fixed; bottom:52px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--panel-2); border:1px solid var(--cyan); color:var(--text); padding:11px 18px; border-radius:8px; font-size:12.5px; z-index:900; opacity:0; pointer-events:none; transition:all .25s ease; box-shadow:0 12px 30px rgba(0,0,0,0.5); max-width:360px; white-space:pre-line; }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .placeholder-tab{ height:420px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; border:1px dashed var(--border-strong); border-radius:12px; background:var(--panel); color:var(--text-faint); }
+  .placeholder-tab h3{font-family:var(--font-head); color:var(--text-dim); font-weight:500; letter-spacing:1px;}
+  .placeholder-tab p{font-size:12.5px;}
+
+  @media (max-width:1200px){
+    .graph-grid{grid-template-columns:1fr;}
+    .bottom-grid3{grid-template-columns:1fr;}
+  }
+  @media (max-width:840px){
+    .header-center{display:none;}
+    .sidebar{width:var(--sidebar-w-collapsed);}
+    .nav-item span{display:none;}
+    .app-main{margin-left:var(--sidebar-w-collapsed);}
+    .footer{left:var(--sidebar-w-collapsed);}
+    .sidebar-footer{display:none;}
+    .header-left .header-titles{display:none;}
+    .graph-card{height:460px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="header">
+  <div class="header-left">
+    <div class="emblem" title="National Emblem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2fd4e8" stroke-width="1.4">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 6v12M7 9l10 6M17 9L7 15" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="header-titles">
+      <div class="t1">CRIMINAL NETWORK INTELLIGENCE SYSTEM</div>
+      <div class="t2">MINISTRY OF HOME AFFAIRS | GOVT. OF INDIA</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <div class="tagline">PEOPLE. PATTERNS. PREVENTION.</div>
+    <div class="search-bar">
+      <input id="globalSearch" type="text" placeholder="Search by name, phone number, FIR no. ..." />
+      <button id="globalSearchBtn" title="Search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="badge">3</span>
+      </button>
+      <div class="dropdown-panel" id="notifPanel">
+        <div class="dropdown-title">NOTIFICATIONS</div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--red)"></span><div class="notif-body"><b>New high-priority alert</b><span>Suspicious ₹48,00,000 transaction flagged — 21:12</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--amber)"></span><div class="notif-body"><b>Case C-2026-0398 updated</b><span>3 new links added to Hawala network</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--cyan)"></span><div class="notif-body"><b>Weekly report ready</b><span>Network growth summary generated</span></div></div>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="profile" id="profileBtn">
+        <div class="avatar">AS</div>
+        <div class="profile-text">
+          <div class="pname">Inspector A. Sharma</div>
+          <div class="prole">Delhi Police (Intelligence)</div>
+        </div>
+        <span class="chev">▾</span>
+      </button>
+      <div class="dropdown-panel" id="profilePanel" style="width:180px;">
+        <div class="menu-item" data-action="profile"><span>👤</span> Profile</div>
+        <div class="menu-item" data-action="settings"><span>⚙</span> Settings</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item danger" data-action="logout"><span>⏻</span> Logout</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar">
+  <nav class="nav-list">
+    <a class="nav-item" href="command.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-8 9 8"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/></svg><span>Command Center</span></a>
+    <a class="nav-item" href="cases.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5"/></svg><span>Cases</span></a>
+    <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7l3 9M16 7l-3 9M8.3 6h7.4"/></svg><span>Network Analysis</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg><span>Entities</span></a>
+    <a class="nav-item" href="alert.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17h.01"/></svg><span>Alerts</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Reports</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="2.6"/><path d="M4 5v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6V5M4 11v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6v-6"/></svg><span>Data Sources</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.6 1z"/></svg><span>Settings</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">TOGETHER FOR<br>A SAFER TOMORROW</div>
+    <div class="tricolor-line"></div>
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="app-main">
+
+  <div class="page-head-row">
+    <div class="page-head-left">
+      <a class="back-link" href="cases.html" id="backToCaseLink">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Case
+      </a>
+      <div class="case-title-row">
+        <h1 id="pageTitle">Metro Arms Supply Network</h1>
+        <span class="case-id-sub" id="caseIdSub">(C-2026-0412)</span>
+        <span class="priority-badge" id="priorityBadge2">HIGH PRIORITY</span>
+        <span class="status-chip" id="statusChip"><span class="dot"></span>ACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-toolbar-row">
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-item active" data-tab="graph">Network Graph</div>
+      <div class="tab-item" data-tab="list">List View</div>
+      <div class="tab-item" data-tab="geo">Geographic View</div>
+      <div class="tab-item" data-tab="flow">Flow Analysis</div>
+    </div>
+    <div class="toolbar-actions">
+      <div class="filters-wrap">
+        <button class="filters-btn" id="filtersBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M7 12h10M10 19h4"/></svg>
+          Filters <span class="chev">▾</span>
+        </button>
+        <div class="filters-panel" id="filtersPanel">
+          <div class="filters-group">
+            <div class="filters-group-title">NODE TYPE</div>
+            <label class="filter-check"><input type="checkbox" data-filter-type="key_suspect" checked><span class="sw" style="background:var(--red)"></span>Key Suspect</label>
+            <label class="filter-check"><input type="checkbox" data-filter-type="suspect" checked><span class="sw" style="background:var(--amber)"></span>Suspect</label>
+            <label class="filter-check"><input type="checkbox" data-filter-type="associate" checked><span class="sw" style="background:var(--yellow)"></span>Associate</label>
+            <label class="filter-check"><input type="checkbox" data-filter-type="organization" checked><span class="sw" style="background:var(--green)"></span>Organization</label>
+            <label class="filter-check"><input type="checkbox" data-filter-type="location" checked><span class="sw" style="background:var(--blue)"></span>Location</label>
+            <label class="filter-check"><input type="checkbox" data-filter-type="phone" checked><span class="sw" style="background:var(--purple)"></span>Phone Number</label>
+          </div>
+          <div class="filters-group">
+            <div class="filters-group-title">RISK LEVEL</div>
+            <label class="filter-check"><input type="checkbox" checked>High</label>
+            <label class="filter-check"><input type="checkbox" checked>Medium</label>
+            <label class="filter-check"><input type="checkbox" checked>Low</label>
+          </div>
+          <div class="filters-group">
+            <div class="filters-group-title">DATE RANGE</div>
+            <label class="filter-check"><input type="radio" name="dr" checked>Last 30 Days</label>
+            <label class="filter-check"><input type="radio" name="dr">Last 90 Days</label>
+            <label class="filter-check"><input type="radio" name="dr">All Time</label>
+          </div>
+        </div>
+      </div>
+      <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle fullscreen" style="margin-bottom:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== GRAPH TAB ===== -->
+  <div class="tab-panel" id="tab-graph">
+    <div class="graph-grid">
+
+      <!-- Graph panel -->
+      <div class="panel graph-card" id="graphCard">
+        <div class="graph-canvas-wrap" id="graphWrap">
+
+          <div class="graph-legend">
+            <div class="legend-row"><span class="legend-dot" style="background:var(--red)"></span>Key Suspect</div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--amber)"></span>Suspect</div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--yellow)"></span>Associate</div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--green)"></span>Organization</div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--blue)"></span>Location</div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--purple)"></span>Phone Number</div>
+            <div class="legend-sep"></div>
+            <div class="legend-line-row"><span class="legend-line"></span>Communication</div>
+            <div class="legend-line-row"><span class="legend-line dash"></span>Financial</div>
+            <div class="legend-line-row"><span class="legend-line dot"></span>Location Movement</div>
+            <div class="legend-line-row"><span class="legend-line assoc"></span>Association</div>
+          </div>
+
+          <svg id="graphSvg"></svg>
+
+          <div class="minimap"><svg id="minimapSvg"></svg></div>
+          <div class="graph-toolbar">
+            <button id="zoomInBtn" title="Zoom in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button id="zoomOutBtn" title="Zoom out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14"/></svg>
+            </button>
+            <button id="recenterBtn" title="Recenter">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="right-col">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>SUSPECT PROFILE</h3>
+            <button class="icon-btn" style="width:26px;height:26px;border-radius:6px;" id="profileCloseBtn" title="Close">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="profile-panel-body" id="profileBody"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>QUICK ACTIONS</h3></div>
+          <div class="qa-grid2">
+            <button class="qa-btn2" data-qa="Track Movement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5-2V6l5 2m0 12l6-2m-6 2V8m6 10l5 2V8l-5-2m0 12V8m0 0L9 6"/></svg><span>Track Movement</span></button>
+            <button class="qa-btn2" data-qa="View Transactions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h10M4 7h10M4 3c3.5 0 6 1.6 6 4s-2.5 4-6 4h-.5L11 17" stroke-linecap="round" stroke-linejoin="round"/></svg><span>View Transactions</span></button>
+            <button class="qa-btn2" data-qa="View Call Records"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h3l1.5 4-2 1.5a10 10 0 004.5 4.5L12.5 10l4 1.5V15a1.5 1.5 0 01-1.6 1.5C8.6 15.9 2.6 9.9 2.5 3.6A1.5 1.5 0 014 2z"/></svg><span>View Call Records</span></button>
+            <button class="qa-btn2" data-qa="Generate Report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Generate Report</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="bottom-grid3">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.9L19 9.5l-4.2 3.3L16 18l-4-2.8L8 18l1.2-5.2L5 9.5l5.2-1.6z"/></svg></div>
+            <h3>AI INSIGHTS</h3>
+          </div>
+          <span class="priority-badge">HIGH PRIORITY</span>
+        </div>
+        <div class="ai-list" id="aiList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>RECENT ALERTS RELATED TO THIS SUSPECT</h3>
+          <a class="link-btn" id="viewAllAlertsBtn">View All →</a>
+        </div>
+        <div class="alerts-list2" id="alertsList2"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>TOP CONNECTIONS</h3>
+          <a class="link-btn" id="viewAllConnBtn">View All →</a>
+        </div>
+        <div class="conn-list" id="connList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OTHER TABS (placeholders) ===== -->
+  <div class="tab-panel" id="tab-list" style="display:none;"><div class="placeholder-tab"><h3>LIST VIEW</h3><p>Tabular entity &amp; link list coming soon.</p></div></div>
+  <div class="tab-panel" id="tab-geo" style="display:none;"><div class="placeholder-tab"><h3>GEOGRAPHIC VIEW</h3><p>Map-based relationship view coming soon.</p></div></div>
+  <div class="tab-panel" id="tab-flow" style="display:none;"><div class="placeholder-tab"><h3>FLOW ANALYSIS</h3><p>Financial / communication flow diagram coming soon.</p></div></div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <span>SECURE GOVERNMENT NETWORK | UNAUTHORIZED ACCESS IS PROHIBITED</span>
+  <div class="footer-right">
+    <span class="system-online"><span class="pulse-dot"></span>SYSTEM ONLINE</span>
+    <span id="liveClock"></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   CASE-AWARE HEADER WIRING
+   Reads ?case=... from the URL (sent here by cases.html's "Analyze
+   Network" button) and updates the page title, case ID, priority
+   badge, status chip and back-link accordingly.
+   NOTE: the graph itself below (NODES/LINKS) is still one static
+   sample network (Rakesh Malhotra's ring) — only the header adapts
+   per case right now. Ask if you want per-case graph data wired too.
+================================================================ */
+const CASE_META = {
+  'C-2026-0412': { title:'Metro Arms Supply Network', badgeText:'HIGH PRIORITY', badgeColor:'var(--red)', badgeBg:'var(--red-dim)', status:'ACTIVE', statusColor:'var(--green)' },
+  'C-2026-0398': { title:'Hawala Financial Network', badgeText:'ACTIVE', badgeColor:'var(--green)', badgeBg:'var(--green-dim)', status:'ACTIVE', statusColor:'var(--green)' },
+  'C-2026-0371': { title:'NCR Vehicle Theft Ring', badgeText:'ACTIVE', badgeColor:'var(--green)', badgeBg:'var(--green-dim)', status:'ACTIVE', statusColor:'var(--green)' },
+};
+
+const naParams = new URLSearchParams(window.location.search);
+const naRequestedCase = naParams.get('case');
+const naCaseId = (naRequestedCase && CASE_META[naRequestedCase]) ? naRequestedCase : 'C-2026-0412';
+
+function applyCaseMeta(){
+  const m = CASE_META[naCaseId];
+  document.getElementById('pageTitle').textContent = m.title;
+  document.getElementById('caseIdSub').textContent = `(${naCaseId})`;
+
+  const badge = document.getElementById('priorityBadge2');
+  badge.textContent = m.badgeText;
+  badge.style.color = m.badgeColor;
+  badge.style.background = m.badgeBg;
+
+  document.getElementById('statusChip').innerHTML = `<span class="dot" style="background:${m.statusColor}"></span>${m.status}`;
+  document.getElementById('backToCaseLink').href = `cases.html?case=${encodeURIComponent(naCaseId)}`;
+  document.title = `${m.title} | Criminal Network Intelligence System`;
+}
+applyCaseMeta();
+
+/* ================================================================
+   DATA
+================================================================ */
+const TYPE_COLOR = {
+  key_suspect:'#ef4a5f', suspect:'#f0a23c', associate:'#e8d24a',
+  organization:'#3ccb7f', location:'#4a8fe7', phone:'#9b7de0', ghost:'#6b7686'
+};
+const TYPE_RADIUS = { key_suspect:34, suspect:24, associate:22, organization:24, location:22, phone:22, ghost:9 };
+
+const NODES = [
+  {id:'rakesh', name:'Rakesh Malhotra', sub:'Key Operator', type:'key_suspect', photo:'https://i.pravatar.cc/160?img=12'},
+  {id:'imran', name:'Imran Qureshi', type:'suspect', photo:'https://i.pravatar.cc/160?img=33'},
+  {id:'sharma_group', name:'Sharma Group', name2:'(Shell Company)', type:'organization'},
+  {id:'vikram', name:'Vikram Sood', type:'suspect', photo:'https://i.pravatar.cc/160?img=51'},
+  {id:'phone1', name:'+91 98765 43210', type:'phone'},
+  {id:'phone2', name:'+91 98111 22334', type:'phone'},
+  {id:'delhi', name:'Delhi', type:'location'},
+  {id:'jaipur', name:'Jaipur', type:'location'},
+  {id:'sahil', name:'Sahil Khan', type:'associate', photo:'https://i.pravatar.cc/160?img=15'},
+  {id:'pooja', name:'Pooja Mehta', type:'associate', photo:'https://i.pravatar.cc/160?img=47'},
+  {id:'manoj', name:'Manoj Tiwari', type:'associate', photo:'https://i.pravatar.cc/160?img=22'},
+  {id:'ahmed_traders', name:'Ahmed Traders', name2:'(Front Company)', type:'organization'},
+  {id:'khan_logistics', name:'Khan Logistics', type:'organization'},
+  {id:'neeraj', name:'Neeraj Verma', type:'suspect', photo:'https://i.pravatar.cc/160?img=8'},
+  {id:'ghost1', type:'ghost'}, {id:'ghost2', type:'ghost'},
+  {id:'ghost3', type:'ghost'}, {id:'ghost4', type:'ghost'}, {id:'ghost5', type:'ghost'},
+];
+
+const LINKS = [
+  {source:'rakesh', target:'imran', type:'communication', badge:'phone'},
+  {source:'rakesh', target:'sharma_group', type:'financial', badge:'rupee'},
+  {source:'rakesh', target:'vikram', type:'communication', badge:'phone'},
+  {source:'rakesh', target:'phone1', type:'association'},
+  {source:'rakesh', target:'phone2', type:'association'},
+  {source:'rakesh', target:'delhi', type:'location'},
+  {source:'rakesh', target:'jaipur', type:'location'},
+  {source:'rakesh', target:'sahil', type:'association', badge:'person'},
+  {source:'rakesh', target:'pooja', type:'association', badge:'person'},
+  {source:'rakesh', target:'manoj', type:'association', badge:'person'},
+  {source:'rakesh', target:'ahmed_traders', type:'financial', badge:'rupee'},
+  {source:'rakesh', target:'khan_logistics', type:'financial', badge:'rupee'},
+  {source:'rakesh', target:'neeraj', type:'communication', badge:'phone'},
+  {source:'imran', target:'sharma_group', type:'financial'},
+  {source:'imran', target:'phone1', type:'association'},
+  {source:'vikram', target:'jaipur', type:'location'},
+  {source:'sahil', target:'pooja', type:'association'},
+  {source:'manoj', target:'neeraj', type:'communication'},
+  {source:'khan_logistics', target:'ahmed_traders', type:'financial'},
+  {source:'imran', target:'ghost1', type:'association'},
+  {source:'vikram', target:'ghost2', type:'association'},
+  {source:'pooja', target:'ghost3', type:'association'},
+  {source:'manoj', target:'ghost4', type:'association'},
+  {source:'neeraj', target:'ghost5', type:'association'},
+];
+
+const LINK_STYLE = {
+  communication:{stroke:'rgba(219,228,240,0.4)', dash:null},
+  financial:{stroke:'#f0a23c', dash:'5,3'},
+  location:{stroke:'#4a8fe7', dash:'1.5,3.5'},
+  association:{stroke:'#9b7de0', dash:'4,3'},
+};
+
+const PROFILES = {
+  rakesh:{ name:'Rakesh Malhotra', aka:'R. Malhotra, Rocky', photo:'https://i.pravatar.cc/160?img=12',
+    risk:87, riskLabel:'HIGH RISK', riskClass:'risk-high',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 98765 43210<br>+91 98111 22334'},
+      {icon:'pin', lbl:'Last Known Location', val:'Okhla Industrial Area, New Delhi <small>(08 Sep 2026, 18:21)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'24 <small>(8 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'3 Organizations <small>(1 shell company)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'5 <small>(2 active)</small>'},
+    ]},
+  imran:{ name:'Imran Qureshi', aka:'Arms Supplier network contact', photo:'https://i.pravatar.cc/160?img=33',
+    risk:78, riskLabel:'HIGH RISK', riskClass:'risk-high',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 90011 22110'},
+      {icon:'pin', lbl:'Last Known Location', val:'Jaipur, Rajasthan <small>(07 Sep 2026, 21:04)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'15 <small>(5 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'1 Organization <small>(Sharma Group)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'2 <small>(1 active)</small>'},
+    ]},
+  vikram:{ name:'Vikram Sood', aka:'Logistics coordinator', photo:'https://i.pravatar.cc/160?img=51',
+    risk:64, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 97300 41122'},
+      {icon:'pin', lbl:'Last Known Location', val:'Jaipur, Rajasthan <small>(06 Sep 2026, 09:40)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'11 <small>(3 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'0 Organizations'},
+      {icon:'doc', lbl:'Related Cases', val:'1 <small>(active)</small>'},
+    ]},
+  sahil:{ name:'Sahil Khan', aka:'Associate', photo:'https://i.pravatar.cc/160?img=15',
+    risk:52, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 88990 12233'},
+      {icon:'pin', lbl:'Last Known Location', val:'Karol Bagh, New Delhi <small>(05 Sep 2026, 14:10)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'7 <small>(2 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'0 Organizations'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+  pooja:{ name:'Pooja Mehta', aka:'Hawala link', photo:'https://i.pravatar.cc/160?img=47',
+    risk:58, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 91234 56780'},
+      {icon:'pin', lbl:'Last Known Location', val:'Chandni Chowk, New Delhi <small>(08 Sep 2026, 10:55)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'9 <small>(3 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'1 Organization <small>(Ahmed Traders)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'2 <small>(1 active)</small>'},
+    ]},
+  manoj:{ name:'Manoj Tiwari', aka:'Field operative', photo:'https://i.pravatar.cc/160?img=22',
+    risk:61, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 99887 65432'},
+      {icon:'pin', lbl:'Last Known Location', val:'Noida Sector 63 <small>(08 Sep 2026, 16:02)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'8 <small>(2 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'0 Organizations'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+  neeraj:{ name:'Neeraj Verma', aka:'Transport', photo:'https://i.pravatar.cc/160?img=8',
+    risk:62, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'phone', lbl:'Phone Numbers', val:'+91 96601 33221'},
+      {icon:'pin', lbl:'Last Known Location', val:'Gurugram, Haryana <small>(07 Sep 2026, 22:30)</small>'},
+      {icon:'link', lbl:'Total Connections', val:'6 <small>(1 high risk)</small>'},
+      {icon:'org', lbl:'Associated Entities', val:'1 Organization <small>(Khan Logistics)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+  sharma_group:{ name:'Sharma Group', aka:'Shell company — flagged', photo:null, kind:'org',
+    risk:71, riskLabel:'HIGH RISK', riskClass:'risk-high',
+    rows:[
+      {icon:'org', lbl:'Registration', val:'Pvt. Ltd. <small>(under verification)</small>'},
+      {icon:'pin', lbl:'Registered Address', val:'Nehru Place, New Delhi'},
+      {icon:'link', lbl:'Total Connections', val:'6 <small>(2 high risk)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'1 <small>(active)</small>'},
+    ]},
+  ahmed_traders:{ name:'Ahmed Traders', aka:'Front company', photo:null, kind:'org',
+    risk:69, riskLabel:'HIGH RISK', riskClass:'risk-high',
+    rows:[
+      {icon:'org', lbl:'Registration', val:'Sole Proprietorship'},
+      {icon:'pin', lbl:'Registered Address', val:'Karol Bagh, New Delhi'},
+      {icon:'link', lbl:'Total Connections', val:'4 <small>(1 high risk)</small>'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+  khan_logistics:{ name:'Khan Logistics', aka:'Transport &amp; freight', photo:null, kind:'org',
+    risk:47, riskLabel:'MEDIUM RISK', riskClass:'risk-medium',
+    rows:[
+      {icon:'org', lbl:'Registration', val:'Partnership Firm'},
+      {icon:'pin', lbl:'Registered Address', val:'Gurugram, Haryana'},
+      {icon:'link', lbl:'Total Connections', val:'3'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+  delhi:{ name:'Delhi', aka:'Frequent location — 12 visits logged', photo:null, kind:'loc',
+    risk:null, rows:[
+      {icon:'pin', lbl:'Region', val:'National Capital Territory'},
+      {icon:'link', lbl:'Linked Entities', val:'9 suspects / associates'},
+      {icon:'doc', lbl:'Related Cases', val:'4'},
+    ]},
+  jaipur:{ name:'Jaipur', aka:'Secondary hub — 5 visits logged', photo:null, kind:'loc',
+    risk:null, rows:[
+      {icon:'pin', lbl:'Region', val:'Rajasthan'},
+      {icon:'link', lbl:'Linked Entities', val:'4 suspects / associates'},
+      {icon:'doc', lbl:'Related Cases', val:'2'},
+    ]},
+  phone1:{ name:'+91 98765 43210', aka:'Registered to Rakesh Malhotra', photo:null, kind:'phone',
+    risk:null, rows:[
+      {icon:'phone', lbl:'Carrier', val:'Airtel — prepaid'},
+      {icon:'link', lbl:'CDR Records', val:'184 calls logged'},
+      {icon:'doc', lbl:'Related Cases', val:'1 <small>(active)</small>'},
+    ]},
+  phone2:{ name:'+91 98111 22334', aka:'Registered to Rakesh Malhotra (secondary)', photo:null, kind:'phone',
+    risk:null, rows:[
+      {icon:'phone', lbl:'Carrier', val:'Jio — prepaid'},
+      {icon:'link', lbl:'CDR Records', val:'62 calls logged'},
+      {icon:'doc', lbl:'Related Cases', val:'1'},
+    ]},
+};
+const GHOST_PROFILE = { name:'Unidentified Contact', aka:'Not yet resolved to a known identity', photo:null, kind:'ghost', risk:null,
+  rows:[ {icon:'link', lbl:'Status', val:'Pending identification'} ] };
+
+const AI_INSIGHTS_BY_ID = {
+  rakesh:[
+    {c:'var(--red)', t:'Central figure with highest network centrality (0.87)'},
+    {c:'var(--amber)', t:'Linked to 3 shell companies'},
+    {c:'var(--green)', t:'Frequent communication with known arms supplier (Imran Qureshi)'},
+    {c:'var(--amber)', t:'Unusual financial transactions detected (₹48,00,000)'},
+    {c:'var(--amber)', t:'Presence at multiple crime-related locations'},
+    {c:'var(--amber)', t:'Likely coordinating cross-state operations'},
+  ],
+  imran:[
+    {c:'var(--red)', t:'Second-highest network centrality (0.61)'},
+    {c:'var(--amber)', t:'Suspected primary arms supply contact'},
+    {c:'var(--green)', t:'Repeated calls with Rakesh Malhotra around transaction dates'},
+    {c:'var(--amber)', t:'Frequently active in Jaipur corridor'},
+  ],
+};
+const DEFAULT_INSIGHTS = [
+  {c:'var(--cyan)', t:'Moderate network centrality relative to key operator'},
+  {c:'var(--green)', t:'No direct financial flags on this entity yet'},
+  {c:'var(--amber)', t:'Connected to at least one high-risk node'},
+  {c:'var(--amber)', t:'Recommend cross-referencing with CDR records'},
+];
+
+const ALERTS = [
+  {icon:'rupee', color:'var(--red)', t:'Suspicious transaction detected', d:'₹48,00,000 transferred (3rd time this month)', time:'19:45', date:'08 Sep'},
+  {icon:'phone', color:'var(--amber)', t:'Multiple calls with Imran Qureshi', d:'27 calls in 2 hours', time:'17:20', date:'08 Sep'},
+  {icon:'pin', color:'var(--blue)', t:'Location match', d:'Both suspects at same location (Jaipur)', time:'14:08', date:'08 Sep'},
+  {icon:'person', color:'var(--green)', t:'New associate detected', d:'Linked to Sharma Group', time:'11:32', date:'08 Sep'},
+];
+
+const CONNECTIONS = [
+  {id:'imran', name:'Imran Qureshi', role:'Arms Supplier', score:92},
+  {id:'vikram', name:'Vikram Sood', role:'Logistics', score:78},
+  {id:'manoj', name:'Manoj Tiwari', role:'Field Operative', score:65},
+  {id:'neeraj', name:'Neeraj Verma', role:'Transport', score:62},
+  {id:'pooja', name:'Pooja Mehta', role:'Hawala Link', score:58},
+];
+
+/* ================================================================
+   ICONS (small inline paths reused across node types / rows)
+================================================================ */
+const ICONS = {
+  person:'<circle cx="9" cy="6.5" r="3"/><path d="M2.5 16c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" stroke-linecap="round"/>',
+  building:'<rect x="3" y="2" width="12" height="15" rx="1"/><path d="M6 6h2M10 6h2M6 9h2M10 9h2M6 12h2M10 12h2" stroke-linecap="round"/>',
+  pin:'<path d="M9 17s6-5.7 6-10a6 6 0 10-12 0c0 4.3 6 10 6 10z"/><circle cx="9" cy="7" r="2.3"/>',
+  phone:'<path d="M4 2h3l1.5 4-2 1.5a10 10 0 004.5 4.5L12.5 10l4 1.5V15a1.5 1.5 0 01-1.6 1.5C8.6 15.9 2.6 9.9 2.5 3.6A1.5 1.5 0 014 2z"/>',
+  rupee:'<path d="M4 3h10M4 7h10M4 3c3.5 0 6 1.6 6 4s-2.5 4-6 4h-.5L11 17" stroke-linecap="round" stroke-linejoin="round"/>',
+  link:'<circle cx="6" cy="6" r="2.6"/><circle cx="12" cy="12" r="2.6"/><path d="M8 8l4 4"/>',
+  org:'<rect x="3" y="2" width="12" height="15" rx="1"/><path d="M6 6h2M10 6h2M6 9h2M10 9h2M6 12h2M10 12h2" stroke-linecap="round"/>',
+  doc:'<path d="M4.5 1.5h6l3.5 3.5V16a1 1 0 01-1 1h-8.5a1 1 0 01-1-1V2.5a1 1 0 011-1z"/><path d="M10.5 1.5V5H14"/>',
+};
+
+/* ================================================================
+   TOAST
+================================================================ */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ================================================================
+   HEADER DROPDOWNS
+================================================================ */
+function toggleDropdown(btnId, panelId){
+  const btn = document.getElementById(btnId);
+  const panel = document.getElementById(panelId);
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-panel.open, .filters-panel.open').forEach(p=>{ if(p!==panel) p.classList.remove('open'); });
+    panel.classList.toggle('open');
+  });
+}
+toggleDropdown('notifBtn','notifPanel');
+toggleDropdown('profileBtn','profilePanel');
+toggleDropdown('filtersBtn','filtersPanel');
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.dropdown-panel.open, .filters-panel.open').forEach(p=>p.classList.remove('open'));
+});
+document.querySelectorAll('#profilePanel .menu-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const action = item.dataset.action;
+    if(action==='logout'){ showToast('Logging out... (placeholder)'); }
+    else if(action==='profile'){ showToast('Opening profile... (placeholder)'); }
+    else { showToast('Opening settings... (placeholder)'); }
+  });
+});
+document.getElementById('globalSearchBtn').addEventListener('click', doGlobalSearch);
+document.getElementById('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') doGlobalSearch(); });
+function doGlobalSearch(){
+  const q = document.getElementById('globalSearch').value.trim();
+  showToast(q ? `Searching for "${q}"... (placeholder)` : 'Enter a search term.');
+}
+
+/* ================================================================
+   TABS
+================================================================ */
+document.querySelectorAll('.tab-item').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    ['graph','list','geo','flow'].forEach(k=>{
+      document.getElementById('tab-'+k).style.display = (k===tab.dataset.tab) ? 'block' : 'none';
+    });
+  });
+});
+
+/* ================================================================
+   QUICK ACTIONS
+================================================================ */
+document.querySelectorAll('.qa-btn2').forEach(btn=>{
+  btn.addEventListener('click', ()=> showToast(`${btn.dataset.qa} — ${currentProfileId ? PROFILES[currentProfileId]?.name || 'selected node' : 'no node selected'} (placeholder action)`));
+});
+document.getElementById('profileCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('profileBody').innerHTML = '<div style="padding:30px 4px; text-align:center; color:var(--text-faint); font-size:12px;">No node selected.<br>Click a node in the graph to view its profile.</div>';
+  currentProfileId = null;
+});
+document.getElementById('viewAllAlertsBtn').addEventListener('click', ()=> showToast('Opening full alert history... (placeholder)'));
+document.getElementById('viewAllConnBtn').addEventListener('click', ()=> showToast('Opening full connection list... (placeholder)'));
+
+/* ================================================================
+   STATIC LISTS: ALERTS + CONNECTIONS
+================================================================ */
+const alertsListEl = document.getElementById('alertsList2');
+ALERTS.forEach(a=>{
+  const row = document.createElement('div');
+  row.className = 'alert-row2';
+  row.innerHTML = `
+    <div class="alert-icon2" style="background:${a.color}22; color:${a.color};">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">${ICONS[a.icon]}</svg>
+    </div>
+    <div class="alert-body2"><div class="t">${a.t}</div><div class="d">${a.d}</div></div>
+    <div class="alert-time2">${a.time}<br>${a.date}</div>`;
+  row.addEventListener('click', ()=> showToast(`${a.t}\n${a.d}`));
+  alertsListEl.appendChild(row);
+});
+
+const connListEl = document.getElementById('connList');
+function renderConnections(){
+  connListEl.innerHTML = '';
+  CONNECTIONS.forEach(c=>{
+    const node = NODES.find(n=>n.id===c.id);
+    const row = document.createElement('div');
+    row.className = 'conn-row';
+    row.dataset.id = c.id;
+    row.innerHTML = `
+      <img class="conn-avatar" src="${node?.photo || ''}" onerror="this.style.visibility='hidden'" />
+      <div class="conn-body"><div class="n">${c.name}</div><div class="r">${c.role}</div></div>
+      <span class="conn-score">${c.score}</span>`;
+    row.addEventListener('click', ()=> selectNode(c.id));
+    connListEl.appendChild(row);
+  });
+}
+renderConnections();
+
+/* ================================================================
+   PROFILE PANEL RENDER
+================================================================ */
+let currentProfileId = null;
+function iconFor(key){
+  const map = {phone:'phone', pin:'pin', link:'link', org:'org', doc:'doc'};
+  return ICONS[map[key]] || ICONS.link;
+}
+function renderProfile(id){
+  const p = PROFILES[id] || GHOST_PROFILE;
+  currentProfileId = PROFILES[id] ? id : null;
+  const body = document.getElementById('profileBody');
+
+  let riskHtml = '';
+  if(p.risk !== null && p.risk !== undefined){
+    riskHtml = `
+      <div class="risk-box">
+        <div><div class="risk-label">RISK SCORE</div><div class="risk-value">${p.risk} / 100</div></div>
+        <span class="risk-badge ${p.riskClass}">${p.riskLabel}</span>
+      </div>`;
+  }
+
+  const rowsHtml = p.rows.map(r=>`
+    <div class="info-row2">
+      <div class="info-row2-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">${iconFor(r.icon)}</svg></div>
+      <div class="info-row2-text"><div class="lbl">${r.lbl}</div><div class="val">${r.val}</div></div>
+    </div>`).join('');
+
+  const photoHtml = p.photo
+    ? `<img class="profile-photo" src="${p.photo}" alt="${p.name}" />`
+    : `<div class="profile-photo" style="display:flex;align-items:center;justify-content:center;color:var(--cyan);">
+        <svg viewBox="0 0 18 18" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round">${p.kind==='org'?ICONS.org:p.kind==='loc'?ICONS.pin:p.kind==='phone'?ICONS.phone:ICONS.person}</svg>
+       </div>`;
+
+  body.innerHTML = `
+    <div class="profile-head-row">
+      ${photoHtml}
+      <div>
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-aka">${p.aka ? 'Also known as: ' + p.aka : ''}</div>
+      </div>
+    </div>
+    ${riskHtml}
+    <div class="info-section-title">BASIC INFORMATION</div>
+    ${rowsHtml}
+    <button class="view-profile-btn" id="viewFullProfileBtn">
+      View Full Profile
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>`;
+  document.getElementById('viewFullProfileBtn').addEventListener('click', ()=> showToast(`Opening full profile for ${p.name}... (placeholder)`));
+
+  // AI Insights
+  const insights = AI_INSIGHTS_BY_ID[id] || DEFAULT_INSIGHTS;
+  document.getElementById('aiList').innerHTML = insights.map(i=>`
+    <div class="ai-item"><span class="dot" style="background:${i.c}"></span>${i.t}</div>`).join('');
+}
+
+/* ================================================================
+   D3 FORCE-DIRECTED GRAPH
+================================================================ */
+const svg = d3.select('#graphSvg');
+const graphWrap = document.getElementById('graphWrap');
+let width = graphWrap.clientWidth, height = graphWrap.clientHeight;
+
+// defs: photo clip paths + glow filter
+const defs = svg.append('defs');
+defs.append('filter').attr('id', 'nodeGlow').attr('x','-60%').attr('y','-60%').attr('width','220%').attr('height','220%')
+  .append('feDropShadow').attr('dx',0).attr('dy',0).attr('stdDeviation',3.2).attr('flood-color','#000').attr('flood-opacity',0.55);
+
+NODES.filter(n=>n.photo).forEach(n=>{
+  defs.append('clipPath').attr('id','clip-'+n.id).append('circle').attr('cx',0).attr('cy',0).attr('r', TYPE_RADIUS[n.type]-3);
+});
+
+const zoomLayer = svg.append('g').attr('class','zoom-layer');
+const linkLayer = zoomLayer.append('g').attr('class','link-layer');
+const nodeLayer = zoomLayer.append('g').attr('class','node-layer');
+
+const nodesData = NODES.map(d=>Object.assign({}, d));
+const linksData = LINKS.map(d=>Object.assign({}, d));
+
+const simulation = d3.forceSimulation(nodesData)
+  .force('link', d3.forceLink(linksData).id(d=>d.id).distance(d => {
+    if(d.source.type==='ghost'||d.target.type==='ghost') return 55;
+    if(d.source.type==='key_suspect'||d.target.type==='key_suspect') return 120;
+    return 90;
+  }).strength(0.55))
+  .force('charge', d3.forceManyBody().strength(d => d.type==='ghost' ? -90 : (d.type==='key_suspect' ? -900 : -320)))
+  .force('center', d3.forceCenter(width/2, height/2))
+  .force('collide', d3.forceCollide().radius(d => TYPE_RADIUS[d.type] + 26).iterations(2))
+  .force('x', d3.forceX(width/2).strength(0.04))
+  .force('y', d3.forceY(height/2).strength(0.04));
+
+// links
+const link = linkLayer.selectAll('line')
+  .data(linksData)
+  .join('line')
+  .attr('stroke', d => LINK_STYLE[d.type].stroke)
+  .attr('stroke-width', d => (d.source.type==='ghost'||d.target.type==='ghost') ? 1 : 1.5)
+  .attr('stroke-dasharray', d => LINK_STYLE[d.type].dash)
+  .attr('opacity', d => (d.source.type==='ghost'||d.target.type==='ghost') ? 0.35 : 0.85);
+
+// badge icons on some links (phone/rupee/person)
+const badgeGroup = linkLayer.selectAll('g.link-badge')
+  .data(linksData.filter(d=>d.badge))
+  .join('g')
+  .attr('class','link-badge');
+badgeGroup.append('circle').attr('r',8).attr('class','link-badge-bg');
+badgeGroup.append('svg').attr('x',-5).attr('y',-5).attr('width',10).attr('height',10).attr('viewBox','0 0 18 18')
+  .html(d => `<g fill="none" stroke="${d.badge==='rupee'?'var(--amber)':d.badge==='phone'?'var(--cyan)':'var(--purple)'}" stroke-width="1.6" stroke-linejoin="round">${ICONS[d.badge==='person'?'person':d.badge]}</g>`);
+
+// nodes
+const node = nodeLayer.selectAll('g.node')
+  .data(nodesData)
+  .join('g')
+  .attr('class', d => 'node node-'+d.type)
+  .style('cursor','pointer')
+  .call(dragBehavior(simulation));
+
+// pulsing ring for key suspect only
+node.filter(d=>d.type==='key_suspect').append('circle')
+  .attr('class','pulse-ring')
+  .attr('r', TYPE_RADIUS.key_suspect+6)
+  .attr('fill','none')
+  .attr('stroke','#ef4a5f')
+  .attr('stroke-width',2.4)
+  .attr('opacity',0.7)
+  .call(g => {
+    g.append('animate').attr('attributeName','r').attr('values', (TYPE_RADIUS.key_suspect+6)+';'+(TYPE_RADIUS.key_suspect+16)+';'+(TYPE_RADIUS.key_suspect+6)).attr('dur','2.2s').attr('repeatCount','indefinite');
+    g.append('animate').attr('attributeName','opacity').attr('values','0.7;0;0.7').attr('dur','2.2s').attr('repeatCount','indefinite');
+  });
+
+// outer ring (colored by type)
+node.append('circle')
+  .attr('class','ring')
+  .attr('r', d => TYPE_RADIUS[d.type])
+  .attr('fill', d => d.type==='ghost' ? '#1a222f' : '#111926')
+  .attr('stroke', d => TYPE_COLOR[d.type])
+  .attr('stroke-width', d => d.type==='key_suspect' ? 3.4 : d.type==='ghost' ? 1.2 : 2.4)
+  .attr('filter','url(#nodeGlow)');
+
+// photo (clipped) for person nodes
+node.filter(d=>d.photo).append('image')
+  .attr('href', d=>d.photo)
+  .attr('x', d=>-(TYPE_RADIUS[d.type]-3)).attr('y', d=>-(TYPE_RADIUS[d.type]-3))
+  .attr('width', d=>(TYPE_RADIUS[d.type]-3)*2).attr('height', d=>(TYPE_RADIUS[d.type]-3)*2)
+  .attr('clip-path', d=>`url(#clip-${d.id})`)
+  .attr('preserveAspectRatio','xMidYMid slice');
+
+// icon for non-photo nodes (org / location / phone / ghost)
+node.filter(d=>!d.photo).append('svg')
+  .attr('x', d => -TYPE_RADIUS[d.type]*0.42).attr('y', d => -TYPE_RADIUS[d.type]*0.42)
+  .attr('width', d => TYPE_RADIUS[d.type]*0.84).attr('height', d => TYPE_RADIUS[d.type]*0.84)
+  .attr('viewBox','0 0 18 18')
+  .html(d => `<g fill="none" stroke="${TYPE_COLOR[d.type]}" stroke-width="1.3" stroke-linejoin="round" opacity="${d.type==='ghost'?0.5:0.95}">${d.type==='organization'?ICONS.building:d.type==='location'?ICONS.pin:d.type==='phone'?ICONS.phone:ICONS.person}</g>`);
+
+// labels
+node.filter(d=>d.type!=='ghost').append('text')
+  .attr('class','node-label')
+  .attr('y', d => TYPE_RADIUS[d.type] + 15)
+  .text(d => d.name);
+node.filter(d=>d.name2).append('text')
+  .attr('class','node-label')
+  .attr('y', d => TYPE_RADIUS[d.type] + 27)
+  .style('fill','var(--text-faint)')
+  .style('font-size','8.5px')
+  .text(d=>d.name2);
+node.filter(d=>d.sub).append('text')
+  .attr('class','node-sublabel')
+  .attr('y', d => TYPE_RADIUS[d.type] + 28)
+  .text(d=>d.sub);
+
+node.on('click', (event,d) => { event.stopPropagation(); selectNode(d.id); });
+node.append('title').text(d => d.name || 'Unidentified contact');
+
+function selectNode(id){
+  node.select('circle.ring')
+    .attr('stroke-width', d => d.id===id ? (TYPE_RADIUS[d.type]>=30?4.4:3.4) : (d.type==='key_suspect'?3.4:d.type==='ghost'?1.2:2.4));
+  renderProfile(id);
+}
+
+// tick
+simulation.on('tick', () => {
+  link
+    .attr('x1', d=>d.source.x).attr('y1', d=>d.source.y)
+    .attr('x2', d=>d.target.x).attr('y2', d=>d.target.y);
+  badgeGroup.attr('transform', d => `translate(${(d.source.x+d.target.x)/2},${(d.source.y+d.target.y)/2})`);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+  updateMinimap();
+});
+
+function dragBehavior(sim){
+  function started(event, d){
+    if(!event.active) sim.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+    graphWrap.classList.add('panning');
+  }
+  function dragged(event, d){ d.fx = event.x; d.fy = event.y; }
+  function ended(event, d){
+    if(!event.active) sim.alphaTarget(0);
+    d.fx = null; d.fy = null;
+    graphWrap.classList.remove('panning');
+  }
+  return d3.drag().on('start', started).on('drag', dragged).on('end', ended);
+}
+
+/* ---- zoom / pan ---- */
+const zoom = d3.zoom().scaleExtent([0.4, 3]).on('zoom', (event)=>{
+  zoomLayer.attr('transform', event.transform);
+});
+svg.call(zoom);
+
+document.getElementById('zoomInBtn').addEventListener('click', ()=> svg.transition().duration(200).call(zoom.scaleBy, 1.25));
+document.getElementById('zoomOutBtn').addEventListener('click', ()=> svg.transition().duration(200).call(zoom.scaleBy, 0.8));
+document.getElementById('recenterBtn').addEventListener('click', ()=>{
+  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+  simulation.alpha(0.4).restart();
+});
+
+/* ---- minimap ---- */
+const minimapSvg = d3.select('#minimapSvg');
+const minimapLayer = minimapSvg.append('g');
+const minimapNodes = minimapLayer.selectAll('circle').data(nodesData).join('circle')
+  .attr('r', d => d.type==='ghost' ? 1.1 : d.type==='key_suspect' ? 3 : 2)
+  .attr('fill', d => TYPE_COLOR[d.type]);
+function updateMinimap(){
+  const mmW = 150, mmH = 100;
+  const sx = mmW / width, sy = mmH / height;
+  minimapNodes.attr('cx', d => d.x*sx).attr('cy', d => d.y*sy);
+}
+
+/* ---- resize handling ---- */
+function resizeGraph(){
+  width = graphWrap.clientWidth; height = graphWrap.clientHeight;
+  simulation.force('center', d3.forceCenter(width/2, height/2));
+  simulation.force('x', d3.forceX(width/2).strength(0.04));
+  simulation.force('y', d3.forceY(height/2).strength(0.04));
+  simulation.alpha(0.5).restart();
+}
+window.addEventListener('resize', ()=> resizeGraph());
+
+/* ---- fullscreen ---- */
+const graphCard = document.getElementById('graphCard');
+document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
+  graphCard.classList.toggle('fullscreen');
+  setTimeout(resizeGraph, 60);
+});
+
+/* ---- filters (functional node-type filter) ---- */
+document.querySelectorAll('[data-filter-type]').forEach(cb=>{
+  cb.addEventListener('change', ()=>{
+    const activeTypes = new Set(
+      Array.from(document.querySelectorAll('[data-filter-type]')).filter(c=>c.checked).map(c=>c.dataset.filterType)
+    );
+    node.style('display', d => activeTypes.has(d.type) || d.type==='ghost' ? null : 'none');
+    link.style('display', d => (activeTypes.has(d.source.type)||d.source.type==='ghost') && (activeTypes.has(d.target.type)||d.target.type==='ghost') ? null : 'none');
+    showToast('Filters updated.');
+  });
+});
+document.querySelectorAll('.filters-panel input[type="checkbox"]:not([data-filter-type]), .filters-panel input[type="radio"]').forEach(cb=>{
+  cb.addEventListener('change', ()=> showToast('Filters updated.'));
+});
+
+/* ---- init default selection ---- */
+selectNode('rakesh');
+
+/* ================================================================
+   LIVE CLOCK
+================================================================ */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function updateClock(){
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('liveClock').textContent = `${dateStr} | ${timeStr}`;
+}
+updateClock();
+setInterval(updateClock, 1000*15);
+</script>
+</body>
+</html>

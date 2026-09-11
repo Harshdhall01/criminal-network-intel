@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Command Center | Criminal Network Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-raised:#0d1219;
+    --panel:#0f151f;
+    --panel-2:#111926;
+    --border:rgba(148,169,199,0.12);
+    --border-strong:rgba(148,169,199,0.22);
+    --text:#dbe4f0;
+    --text-dim:#8593a8;
+    --text-faint:#57667c;
+    --cyan:#2fd4e8;
+    --cyan-dim:rgba(47,212,232,0.14);
+    --blue:#4a8fe7;
+    --red:#ef4a5f;
+    --red-dim:rgba(239,74,95,0.14);
+    --amber:#f0a23c;
+    --amber-dim:rgba(240,162,60,0.14);
+    --green:#3ccb7f;
+    --green-dim:rgba(60,203,127,0.14);
+    --grey:#6b7686;
+    --purple:#9b7de0;
+    --font-head:'Oswald',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --header-h:76px;
+    --sidebar-w:220px;
+    --sidebar-w-collapsed:72px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+    .bg-layer{
+    position:fixed;
+    inset:0;
+    background-image:url('assets/bg-command1.webp');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    z-index:0;
+  }
+  .bg-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,14,20,0.55);
+    z-index:0;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(47,212,232,0.05), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(74,143,231,0.05), transparent 45%);
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#26303f; border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:#334152;}
+
+  /* ---------------- HEADER ---------------- */
+  .header{
+    position:fixed; top:0; left:0; right:0; height:var(--header-h);
+    background:linear-gradient(180deg,#0c1119 0%, #0a0e14 100%);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center;
+    padding:0 20px;
+    gap:20px;
+    z-index:100;
+  }
+  .header-left{
+    display:flex; align-items:center; gap:12px;
+    min-width:110px;
+  }
+  .emblem{
+    width:42px; height:42px;
+    border-radius:50%;
+    border:1.5px solid var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle, rgba(47,212,232,0.12), transparent 70%);
+    flex-shrink:0;
+  }
+  .emblem svg{width:24px; height:24px;}
+  .header-titles{line-height:1.25;}
+  .header-titles .t1{
+    font-family:var(--font-head);
+    font-weight:600;
+    font-size:15.5px;
+    letter-spacing:0.4px;
+    color:#f0f4fa;
+  }
+  .header-titles .t2{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--text-faint);
+    letter-spacing:0.6px;
+    margin-top:2px;
+  }
+  .header-center{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    max-width:640px;
+    margin:0 auto 0 60px;
+  }
+  .tagline{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--cyan);
+    letter-spacing:2px;
+    opacity:0.85;
+  }
+  .search-bar{
+    width:100%;
+    display:flex; align-items:center;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:0 4px 0 12px;
+    height:34px;
+    transition:border-color .15s;
+  }
+  .search-bar:focus-within{border-color:var(--cyan);}
+  .search-bar input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text); font-size:12.5px; font-family:var(--font-body);
+    height:100%;
+  }
+  .search-bar input::placeholder{color:var(--text-faint);}
+  .search-bar button{
+    background:var(--cyan-dim);
+    border:none; border-radius:4px;
+    width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--cyan);
+    flex-shrink:0;
+  }
+  .search-bar button:hover{background:rgba(47,212,232,0.25);}
+  .header-right{
+    display:flex; align-items:center; gap:18px;
+    min-width:280px;
+    justify-content:flex-end;
+  }
+  .icon-btn{
+    position:relative;
+    width:36px; height:36px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--panel);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim);
+  }
+  .icon-btn:hover{border-color:var(--border-strong); color:var(--text);}
+  .badge{
+    position:absolute; top:-5px; right:-5px;
+    background:var(--red);
+    color:#fff; font-size:9.5px; font-weight:700;
+    min-width:16px; height:16px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border:1.5px solid var(--bg);
+    font-family:var(--font-mono);
+  }
+  .dropdown-wrap{position:relative;}
+  .dropdown-panel{
+    position:absolute; top:46px; right:0;
+    width:300px;
+    background:var(--panel-2);
+    border:1px solid var(--border-strong);
+    border-radius:10px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.5);
+    padding:8px;
+    display:none;
+    z-index:200;
+  }
+  .dropdown-panel.open{display:block;}
+  .dropdown-title{
+    font-family:var(--font-head);
+    font-size:11px; letter-spacing:1px;
+    color:var(--text-dim);
+    padding:8px 10px 6px;
+  }
+  .notif-item{
+    display:flex; gap:10px;
+    padding:9px 10px; border-radius:7px;
+  }
+  .notif-item:hover{background:var(--bg-raised);}
+  .notif-dot{width:7px; height:7px; border-radius:50%; margin-top:6px; flex-shrink:0;}
+  .notif-body b{display:block; font-size:12.5px; color:var(--text); font-weight:600;}
+  .notif-body span{font-size:11px; color:var(--text-faint);}
+  .profile{
+    display:flex; align-items:center; gap:9px;
+    padding:5px 9px 5px 5px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--panel);
+  }
+  .profile:hover{border-color:var(--border-strong);}
+  .avatar{
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-head); font-weight:600; font-size:12.5px; color:#04141a;
+  }
+  .profile-text{line-height:1.2;}
+  .profile-text .pname{font-size:12px; font-weight:600; color:var(--text);}
+  .profile-text .prole{font-size:10px; color:var(--text-faint);}
+  .chev{color:var(--text-faint); font-size:9px; margin-left:2px;}
+  .menu-item{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:7px;
+    font-size:12.5px; color:var(--text-dim);
+  }
+  .menu-item:hover{background:var(--bg-raised); color:var(--text);}
+  .menu-item.danger:hover{color:var(--red);}
+  .menu-divider{height:1px; background:var(--border); margin:6px 2px;}
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar{
+    position:fixed; top:var(--header-h); left:0; bottom:0;
+    width:var(--sidebar-w);
+    background:var(--bg-raised);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    z-index:90;
+    transition:width .18s ease;
+  }
+  .nav-list{padding:14px 10px; display:flex; flex-direction:column; gap:3px; flex:1;}
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 12px;
+    border-radius:8px;
+    color:var(--text-dim);
+    font-size:12.8px;
+    font-weight:500;
+    border:1px solid transparent;
+    position:relative;
+  }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:var(--panel); color:var(--text);}
+  .nav-item.active{
+    background:var(--cyan-dim);
+    color:var(--cyan);
+    border-color:rgba(47,212,232,0.35);
+  }
+  .nav-item.active::before{
+    content:"";
+    position:absolute; left:-10px; top:50%; transform:translateY(-50%);
+    width:3px; height:60%;
+    background:var(--cyan);
+    border-radius:0 3px 3px 0;
+  }
+  .sidebar-footer{
+    position:relative;
+    height:150px;
+    border-top:1px solid var(--border);
+    display:flex; align-items:flex-end; justify-content:center;
+    overflow:hidden;
+    padding:14px 10px 16px;
+    background:
+      radial-gradient(ellipse at bottom, rgba(47,212,232,0.06), transparent 70%);
+  }
+  .gov-silhouette{
+    position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+    width:120px; height:74px;
+    opacity:0.16;
+    filter:brightness(1.4);
+  }
+  .sidebar-footer-text{
+    position:relative; z-index:2;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:8.6px;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    line-height:1.6;
+  }
+  .tricolor-line{
+    position:absolute; bottom:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#ff9933 0%, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%, #138808 100%);
+  }
+
+  /* ---------------- LAYOUT ---------------- */
+  .app-main{
+    margin-left:var(--sidebar-w);
+    margin-top:var(--header-h);
+    padding:22px 24px 90px;
+    min-height:calc(100vh - var(--header-h));
+    position:relative; z-index:1;
+  }
+  .placeholder-view{
+    display:none;
+    height:60vh;
+    align-items:center; justify-content:center;
+    flex-direction:column; gap:10px;
+    border:1px dashed var(--border-strong);
+    border-radius:12px;
+    color:var(--text-faint);
+    background:var(--panel);
+  }
+  .placeholder-view.show{display:flex;}
+  .placeholder-view h2{font-family:var(--font-head); color:var(--text-dim); font-weight:500; letter-spacing:1px;}
+  .placeholder-view p{font-size:12.5px;}
+  #view-command{display:none;}
+  #view-command.show{display:block;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:15px 18px;
+    border-bottom:1px solid var(--border);
+  }
+  .panel-head h3{
+    font-family:var(--font-head);
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.8px;
+    color:var(--text);
+  }
+  .link-btn{
+    font-size:11.5px; color:var(--cyan); font-weight:500;
+  }
+  .link-btn:hover{text-decoration:underline;}
+
+  /* ---- stats row ---- */
+  .stats-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    margin-bottom:18px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 17px;
+    display:flex; flex-direction:column; gap:9px;
+    position:relative; overflow:hidden;
+  }
+  .stat-top{display:flex; align-items:flex-start; justify-content:space-between;}
+  .stat-label{
+    font-family:var(--font-mono);
+    font-size:10px; letter-spacing:0.6px;
+    color:var(--text-faint);
+  }
+  .stat-icon{
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .stat-icon svg{width:16px; height:16px;}
+  .stat-value-row{display:flex; align-items:baseline; gap:9px;}
+  .stat-value{font-family:var(--font-head); font-size:28px; font-weight:600; color:#f2f6fb;}
+  .stat-trend{font-family:var(--font-mono); font-size:11px; font-weight:600; padding:2px 6px; border-radius:4px;}
+  .trend-up-good{color:var(--green); background:var(--green-dim);}
+  .trend-up-bad{color:var(--red); background:var(--red-dim);}
+  .stat-sub{font-size:10.8px; color:var(--text-faint);}
+
+  /* ---- grid layout ---- */
+  .grid-3col{
+    display:grid;
+    grid-template-columns:300px 1fr 320px;
+    gap:16px;
+    align-items:start;
+    margin-bottom:16px;
+  }
+
+  /* ---- cases panel ---- */
+  .case-search{
+    padding:12px 16px 8px;
+  }
+  .case-search input{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:8px 10px;
+    color:var(--text);
+    font-size:11.5px;
+    outline:none;
+  }
+  .case-search input:focus{border-color:var(--cyan);}
+  .case-list{max-height:430px; overflow-y:auto; padding:4px 8px;}
+  .case-row{
+    padding:11px 10px;
+    border-radius:8px;
+    border:1px solid transparent;
+    display:flex; flex-direction:column; gap:5px;
+    cursor:pointer;
+  }
+  .case-row:hover{background:var(--panel-2); border-color:var(--border);}
+  .case-id{font-family:var(--font-mono); font-size:10px; color:var(--text-faint);}
+  .case-title{font-size:12.2px; font-weight:600; color:var(--text);}
+  .case-meta{display:flex; align-items:center; justify-content:space-between; margin-top:1px;}
+  .status-pill{
+    display:flex; align-items:center; gap:5px;
+    font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.4px;
+    font-weight:600;
+  }
+  .status-dot{width:6px; height:6px; border-radius:50%;}
+  .case-date{font-size:10px; color:var(--text-faint);}
+  .panel-footer-btn{
+    display:block; width:calc(100% - 24px); margin:10px 12px 14px;
+    padding:9px; text-align:center;
+    background:var(--panel-2); border:1px solid var(--border);
+    border-radius:8px; font-size:11.5px; font-weight:600; color:var(--cyan);
+  }
+  .panel-footer-btn:hover{border-color:var(--cyan);}
+  .new-case-btn{
+    background:var(--cyan-dim); border:1px solid rgba(47,212,232,0.35);
+    color:var(--cyan); font-size:11px; font-weight:600;
+    padding:6px 11px; border-radius:6px;
+  }
+  .new-case-btn:hover{background:rgba(47,212,232,0.25);}
+  .no-results{padding:26px 10px; text-align:center; color:var(--text-faint); font-size:11.5px;}
+
+  /* ---- geo panel ---- */
+  .geo-panel{position:relative;}
+  .geo-controls{display:flex; align-items:center; gap:10px;}
+  .range-select{
+    position:relative;
+  }
+  .range-btn{
+    background:var(--panel-2); border:1px solid var(--border);
+    border-radius:6px; padding:6px 10px;
+    font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:6px;
+  }
+  .range-menu{
+    position:absolute; top:34px; right:0;
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:8px; padding:5px; min-width:130px;
+    display:none; z-index:50;
+    box-shadow:0 12px 30px rgba(0,0,0,0.5);
+  }
+  .range-menu.open{display:block;}
+  .range-opt{padding:7px 9px; border-radius:6px; font-size:11.5px; color:var(--text-dim);}
+  .range-opt:hover{background:var(--bg-raised); color:var(--text);}
+  .range-opt.active{color:var(--cyan);}
+  .map-wrap{
+    position:relative;
+    padding:14px;
+    height:430px;
+  }
+  .map-viewport{
+    width:100%; height:100%;
+    overflow:hidden;
+    border-radius:8px;
+    background:
+      radial-gradient(ellipse at 45% 40%, rgba(47,212,232,0.05), transparent 60%),
+      var(--bg-raised);
+    position:relative;
+  }
+  .map-svg-holder{
+    width:100%; height:100%;
+    transform-origin:center center;
+    transition:transform .2s ease;
+  }
+  .map-svg-holder svg{width:100%; height:100%;}
+  .region-label{
+    font-family:var(--font-mono); font-size:8.5px; fill:var(--text-faint); opacity:0.55; letter-spacing:1px;
+  }
+  .city-dot{cursor:pointer;}
+  .map-legend{
+    position:absolute; top:24px; right:24px;
+    background:rgba(13,18,25,0.9);
+    border:1px solid var(--border-strong);
+    border-radius:8px; padding:10px 12px;
+    font-size:10.5px; color:var(--text-dim);
+    display:flex; flex-direction:column; gap:6px;
+    z-index:10;
+    backdrop-filter:blur(4px);
+  }
+  .map-legend div{display:flex; align-items:center; gap:7px;}
+  .legend-swatch{width:8px; height:8px; border-radius:50%;}
+  .zoom-controls{
+    position:absolute; bottom:24px; right:24px;
+    display:flex; flex-direction:column;
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:8px; overflow:hidden;
+    z-index:10;
+  }
+  .zoom-btn{
+    width:32px; height:32px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); font-size:16px; font-weight:600;
+    border-bottom:1px solid var(--border);
+  }
+  .zoom-btn:last-child{border-bottom:none;}
+  .zoom-btn:hover{background:var(--bg-raised); color:var(--cyan);}
+  .map-tooltip{
+    position:absolute;
+    background:var(--panel-2);
+    border:1px solid var(--cyan);
+    border-radius:7px;
+    padding:8px 11px;
+    font-size:11px;
+    color:var(--text);
+    pointer-events:none;
+    display:none;
+    z-index:20;
+    white-space:nowrap;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  }
+  .map-tooltip b{color:var(--cyan); font-family:var(--font-mono);}
+
+  /* ---- alerts panel ---- */
+  .alerts-list{max-height:430px; overflow-y:auto; padding:6px 8px;}
+  .alert-row{
+    display:flex; gap:10px;
+    padding:11px 10px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .alert-row:hover{background:var(--panel-2);}
+  .alert-dot{width:7px; height:7px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+  .alert-body{flex:1; min-width:0;}
+  .alert-time{font-family:var(--font-mono); font-size:9.5px; color:var(--text-faint);}
+  .alert-title{font-size:12px; font-weight:600; color:var(--text); margin-top:2px;}
+  .alert-desc{font-size:10.8px; color:var(--text-faint); margin-top:2px;}
+  .sev-badge{
+    font-family:var(--font-mono); font-size:9px; font-weight:700;
+    padding:2px 6px; border-radius:4px; flex-shrink:0; height:fit-content;
+    margin-top:1px;
+  }
+
+  /* ---- bottom row ---- */
+  .grid-bottom{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 0.85fr;
+    gap:16px;
+  }
+  .chart-legend-inline{display:flex; align-items:center; gap:14px;}
+  .legend-chip{display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-dim);}
+  .legend-chip .dot{width:8px; height:8px; border-radius:50%;}
+  .chart-box{padding:16px 14px 8px; height:260px; position:relative;}
+  .donut-box{padding:14px; display:flex; align-items:center; gap:14px; height:260px;}
+  .donut-canvas-wrap{position:relative; width:150px; height:150px; flex-shrink:0;}
+  .donut-center{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; pointer-events:none;
+  }
+  .donut-center .n{font-family:var(--font-head); font-size:17px; font-weight:600; color:#f2f6fb;}
+  .donut-center .l{font-size:8.5px; color:var(--text-faint); letter-spacing:0.5px;}
+  .donut-legend{display:flex; flex-direction:column; gap:9px; flex:1;}
+  .donut-legend-item{display:flex; align-items:center; justify-content:space-between; font-size:11px;}
+  .donut-legend-item .left{display:flex; align-items:center; gap:8px; color:var(--text-dim);}
+  .donut-legend-item .dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .donut-legend-item .pct{font-family:var(--font-mono); color:var(--text); font-weight:600;}
+
+  /* ---- quick actions ---- */
+  .qa-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    padding:14px;
+  }
+  .qa-btn{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 10px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    text-align:center;
+  }
+  .qa-btn:hover{border-color:var(--cyan); background:var(--cyan-dim);}
+  .qa-btn svg{width:20px; height:20px; color:var(--cyan);}
+  .qa-btn span{font-size:11px; font-weight:600; color:var(--text-dim);}
+  .qa-btn:hover span{color:var(--text);}
+
+  /* ---------------- FOOTER ---------------- */
+  .footer{
+    position:fixed; bottom:0; left:var(--sidebar-w); right:0;
+    height:36px;
+    background:var(--bg-raised);
+    border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.5px;
+    color:var(--text-faint);
+    z-index:80;
+  }
+  .footer-right{display:flex; align-items:center; gap:16px;}
+  .system-online{display:flex; align-items:center; gap:6px; color:var(--green);}
+  .pulse-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 0 0 rgba(60,203,127,0.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(60,203,127,0.55);}
+    70%{box-shadow:0 0 0 7px rgba(60,203,127,0);}
+    100%{box-shadow:0 0 0 0 rgba(60,203,127,0);}
+  }
+  .glow-dot{animation:glow 1.8s infinite ease-in-out; stroke:rgba(255,255,255,0.85); stroke-width:1.5px;}
+  @keyframes glow{
+    0%,100%{opacity:0.65; r:11;}
+    50%{opacity:1; r:15;}
+  }
+
+  /* ---- modal ---- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,8,12,0.72);
+    display:none; align-items:center; justify-content:center; z-index:500;
+    backdrop-filter:blur(2px);
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    width:400px; max-width:90vw;
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:12px; padding:22px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.6);
+  }
+  .modal-box h3{font-family:var(--font-head); font-size:14px; letter-spacing:0.5px; margin-bottom:14px; color:var(--text);}
+  .modal-box label{font-size:11px; color:var(--text-faint); display:block; margin-bottom:5px; margin-top:12px;}
+  .modal-box input,.modal-box select{
+    width:100%; background:var(--panel); border:1px solid var(--border);
+    border-radius:7px; padding:9px 10px; color:var(--text); font-size:12px; outline:none;
+  }
+  .modal-box input:focus,.modal-box select:focus{border-color:var(--cyan);}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:20px;}
+  .modal-btn{padding:8px 16px; border-radius:7px; font-size:12px; font-weight:600; border:1px solid var(--border);}
+  .modal-btn.cancel{color:var(--text-dim); background:transparent;}
+  .modal-btn.cancel:hover{border-color:var(--border-strong);}
+  .modal-btn.confirm{background:var(--cyan); color:#04141a; border-color:var(--cyan);}
+  .modal-btn.confirm:hover{opacity:0.9;}
+
+  .toast{
+    position:fixed; bottom:52px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2); border:1px solid var(--cyan);
+    color:var(--text); padding:11px 18px; border-radius:8px; font-size:12.5px;
+    z-index:600; opacity:0; pointer-events:none; transition:all .25s ease;
+    box-shadow:0 12px 30px rgba(0,0,0,0.5);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:1200px){
+    .grid-3col{grid-template-columns:1fr; }
+    .grid-bottom{grid-template-columns:1fr;}
+    .stats-row{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:840px){
+    .header-center{display:none;}
+    .sidebar{width:var(--sidebar-w-collapsed);}
+    .nav-item span{display:none;}
+    .app-main{margin-left:var(--sidebar-w-collapsed);}
+    .footer{left:var(--sidebar-w-collapsed);}
+    .sidebar-footer{display:none;}
+    .stats-row{grid-template-columns:1fr;}
+    .header-left .header-titles{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="header">
+
+
+  <div class="header-center">
+    <div class="tagline">INTELLIGENCE TODAY. SAFER TOMORROW.</div>
+    <div class="search-bar">
+      <input id="globalSearch" type="text" placeholder="Search by name, phone number, FIR no. ..." />
+      <button id="globalSearchBtn" title="Search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="badge">3</span>
+      </button>
+      <div class="dropdown-panel" id="notifPanel">
+        <div class="dropdown-title">NOTIFICATIONS</div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--red)"></span><div class="notif-body"><b>New high-priority alert</b><span>Suspicious ₹48,00,000 transaction flagged — 21:12</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--amber)"></span><div class="notif-body"><b>Case C-2026-0398 updated</b><span>3 new links added to Hawala network</span></div></div>
+        <div class="notif-item"><span class="notif-dot" style="background:var(--cyan)"></span><div class="notif-body"><b>Weekly report ready</b><span>Network growth summary generated</span></div></div>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="profile" id="profileBtn">
+        <div class="avatar">H</div>
+        <div class="profile-text">
+          <div class="pname">Harsh</div>
+          <div class="prole">Delhi Police (Intelligence)</div>
+        </div>
+        <span class="chev">▾</span>
+      </button>
+      <div class="dropdown-panel" id="profilePanel" style="width:180px;">
+        <div class="menu-item" data-action="profile"><span>👤</span> Profile</div>
+        <div class="menu-item" data-action="settings"><span>⚙</span> Settings</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item danger" data-action="logout"><span>⏻</span> Logout</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar">
+  <nav class="nav-list" id="navList">
+    <a class="nav-item active" data-view="command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-8 9 8"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/></svg><span>Command Center</span></a>
+    <a class="nav-item" href="cases.html" data-view="cases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5"/></svg><span>Cases</span></a>
+    <a class="nav-item" href="networkanalysis.html" data-view="network"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7l3 9M16 7l-3 9M8.3 6h7.4"/></svg><span>Network Analysis</span></a>
+    <a class="nav-item" data-view="entities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg><span>Entities</span></a>
+    <a class="nav-item" href="alert.html" data-view="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17h.01"/></svg><span>Alerts</span></a>
+    <a class="nav-item" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Reports</span></a>
+    <a class="nav-item" data-view="sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="2.6"/><path d="M4 5v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6V5M4 11v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6v-6"/></svg><span>Data Sources</span></a>
+    <a class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.6 1z"/></svg><span>Settings</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <img class="gov-silhouette" src="assets/bg.webp" alt="" onerror="this.style.display='none'">
+    <div class="sidebar-footer-text">LAW · INTELLIGENCE · ACTION<br>A SAFER INDIA</div>
+    <div class="tricolor-line"></div>
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="app-main">
+
+  <div id="view-command" class="show">
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">TOTAL ENTITIES TRACKED</span>
+          <div class="stat-icon" style="background:var(--cyan-dim); color:var(--cyan);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M14.5 14.2c.6-.1 1.3-.2 2-.2 3 0 5.5 2.4 5.5 5.4"/></svg>
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value">1,842</span>
+          <span class="stat-trend trend-up-good">▲ 12%</span>
+        </div>
+        <span class="stat-sub">Suspects | Associates | Organizations</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">TOTAL LINKS ANALYZED</span>
+          <div class="stat-icon" style="background:var(--cyan-dim); color:var(--cyan);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.8"/><circle cx="18" cy="18" r="2.8"/><path d="M8 8l8 8"/><circle cx="18" cy="6" r="2.8"/><circle cx="6" cy="18" r="2.8"/><path d="M16 8l-8 8"/></svg>
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value">5,731</span>
+          <span class="stat-trend trend-up-good">▲ 18%</span>
+        </div>
+        <span class="stat-sub">Calls | Transactions | Locations | Meetings</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">FLAGGED PATTERNS</span>
+          <div class="stat-icon" style="background:var(--red-dim); color:var(--red);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17h.01"/></svg>
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value">327</span>
+          <span class="stat-trend trend-up-bad">▲ 27%</span>
+        </div>
+        <span class="stat-sub">Anomalies | Risk Events | Watchlist Hits</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">DATA SOURCES</span>
+          <div class="stat-icon" style="background:var(--amber-dim); color:var(--amber);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="2.6"/><path d="M4 5v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6V5M4 11v6c0 1.4 3.6 2.6 8 2.6s8-1.2 8-2.6v-6"/></svg>
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value">8</span>
+        </div>
+        <span class="stat-sub">FIRs | CDR | Financial | Surveillance | OSINT | ...</span>
+      </div>
+    </div>
+
+    <!-- 3 Column Grid -->
+    <div class="grid-3col">
+
+      <!-- Active Cases -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>ACTIVE CASES (12)</h3>
+          <button class="new-case-btn" id="newCaseBtn">+ New Case</button>
+        </div>
+        <div class="case-search">
+          <input id="caseSearchInput" type="text" placeholder="Search cases by name, ID, or keyword..." />
+        </div>
+        <div class="case-list" id="caseList"></div>
+        <button class="panel-footer-btn" id="viewAllCases">View All Cases →</button>
+      </div>
+
+      <!-- Geographic Overview -->
+      <div class="panel geo-panel">
+        <div class="panel-head">
+          <h3>GEOGRAPHIC OVERVIEW</h3>
+          <div class="geo-controls">
+            <div class="range-select">
+              <button class="range-btn" id="rangeBtn">Last 30 Days <span class="chev">▾</span></button>
+              <div class="range-menu" id="rangeMenu">
+                <div class="range-opt" data-range="7">Last 7 Days</div>
+                <div class="range-opt active" data-range="30">Last 30 Days</div>
+                <div class="range-opt" data-range="90">Last 90 Days</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <div class="map-legend">
+            <div><span class="legend-swatch" style="background:var(--red);"></span>High Activity</div>
+            <div><span class="legend-swatch" style="background:var(--amber);"></span>Medium Activity</div>
+            <div><span class="legend-swatch" style="background:#e8d24a;"></span>Low Activity</div>
+          </div>
+          <div class="map-viewport" id="mapViewport">
+            <div class="map-svg-holder" id="mapSvgHolder">
+              <svg viewBox="0 0 1245 1263" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="indiaGlow" cx="42%" cy="35%" r="75%">
+                    <stop offset="0%" stop-color="rgba(47,212,232,0.10)"/>
+                    <stop offset="100%" stop-color="rgba(47,212,232,0)"/>
+                  </radialGradient>
+                </defs>
+
+                <!-- real India district-map raster, dropped into assets/ -->
+                <image href="assets/india-map.webp" x="0" y="0" width="1245" height="1263" preserveAspectRatio="xMidYMid meet"/>
+                <rect x="0" y="0" width="1245" height="1263" fill="url(#indiaGlow)" style="pointer-events:none;"/>
+
+                <!-- city dots injected here (coordinates calibrated to assets/india-map.webp pixels) -->
+                <g class="cities"></g>
+              </svg>
+            </div>
+          </div>
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomIn">+</button>
+            <button class="zoom-btn" id="zoomOut">−</button>
+          </div>
+          <div class="map-tooltip" id="mapTooltip"></div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>RECENT ALERTS &amp; PATTERNS</h3>
+          <a class="link-btn" id="viewAllAlerts">View All →</a>
+        </div>
+        <div class="alerts-list" id="alertsList"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="grid-bottom">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>NETWORK GROWTH (LAST 30 DAYS)</h3>
+          <div class="chart-legend-inline">
+            <span class="legend-chip"><span class="dot" style="background:var(--blue)"></span>Entities</span>
+            <span class="legend-chip"><span class="dot" style="background:var(--green)"></span>Links</span>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="growthChart"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>ENTITY TYPE DISTRIBUTION</h3></div>
+        <div class="donut-box">
+          <div class="donut-canvas-wrap">
+            <canvas id="donutChart"></canvas>
+            <div class="donut-center"><div class="n">1,842</div><div class="l">ENTITIES</div></div>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>QUICK ACTIONS</h3></div>
+        <div class="qa-grid">
+          <button class="qa-btn" data-qa="Search Suspect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Search Suspect</span></button>
+          <button class="qa-btn" data-qa="Add New Case"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M12 11v6M9 14h6"/></svg><span>Add New Case</span></button>
+          <button class="qa-btn" data-qa="Generate Report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Generate Report</span></button>
+          <button class="qa-btn" data-qa="Upload Data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg><span>Upload Data</span></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Placeholder views for other nav items -->
+  <div class="placeholder-view" id="view-cases"><h2>CASES</h2><p>This section will be built next — full case management view.</p></div>
+  <div class="placeholder-view" id="view-network"><h2>NETWORK ANALYSIS</h2><p>Graph-based link analysis view coming soon.</p></div>
+  <div class="placeholder-view" id="view-entities"><h2>ENTITIES</h2><p>Entity registry &amp; profiles view coming soon.</p></div>
+  <div class="placeholder-view" id="view-alerts"><h2>ALERTS</h2><p>Full alerts &amp; pattern monitoring view coming soon.</p></div>
+  <div class="placeholder-view" id="view-reports"><h2>REPORTS</h2><p>Reporting &amp; analytics module coming soon.</p></div>
+  <div class="placeholder-view" id="view-sources"><h2>DATA SOURCES</h2><p>Data source integrations view coming soon.</p></div>
+  <div class="placeholder-view" id="view-settings"><h2>SETTINGS</h2><p>System &amp; account settings view coming soon.</p></div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <span>SECURE GOVERNMENT NETWORK | UNAUTHORIZED ACCESS IS PROHIBITED</span>
+  <div class="footer-right">
+    <span class="system-online"><span class="pulse-dot"></span>SYSTEM ONLINE</span>
+    <span id="liveClock"></span>
+  </div>
+</footer>
+
+<!-- ============ MODAL: New Case ============ -->
+<div class="modal-overlay" id="newCaseModal">
+  <div class="modal-box">
+    <h3>CREATE NEW CASE</h3>
+    <label>Case Title</label>
+    <input type="text" id="newCaseTitle" placeholder="e.g. Border Smuggling Network" />
+    <label>Priority</label>
+    <select id="newCasePriority">
+      <option value="high">High Priority</option>
+      <option value="active" selected>Active</option>
+      <option value="monitoring">Monitoring</option>
+    </select>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="cancelNewCase">Cancel</button>
+      <button class="modal-btn confirm" id="confirmNewCase">Create Case</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= DATA ================= */
+const CASES = [
+  {id:'C-2026-0412', title:'Metro Arms Supply Network', status:'high', label:'HIGH PRIORITY', date:'08 Sep 2026'},
+  {id:'C-2026-0398', title:'Hawala Financial Network', status:'active', label:'ACTIVE', date:'07 Sep 2026'},
+  {id:'C-2026-0371', title:'NCR Vehicle Theft Ring', status:'active', label:'ACTIVE', date:'05 Sep 2026'},
+  {id:'C-2026-0345', title:'Synthetic Drug Trafficking', status:'monitoring', label:'MONITORING', date:'02 Sep 2026'},
+  {id:'C-2026-0310', title:'Cyber Fraud Syndicate', status:'active', label:'ACTIVE', date:'28 Aug 2026'},
+  {id:'C-2026-0288', title:'Extortion & Land Grab', status:'monitoring', label:'MONITORING', date:'25 Aug 2026'},
+  {id:'C-2026-0241', title:'Human Trafficking Module', status:'closed', label:'CLOSED', date:'15 Aug 2026'},
+];
+const STATUS_COLOR = {high:'var(--red)', active:'var(--green)', monitoring:'var(--amber)', closed:'var(--grey)'};
+
+const ALERTS = [
+  {id:'ALT-2026-0037', time:'21:12', title:'Suspicious transaction detected', desc:'₹48,00,000 transferred (3rd time this month)', sev:'high'},
+  {id:'ALT-2026-0038', time:'19:45', title:'Unusual movement pattern', desc:'Device moving Delhi → Jaipur (off usual route)', sev:'high'},
+  {id:'ALT-2026-0039', time:'17:20', title:'Frequent communication', desc:'27 calls between known associates', sev:'medium'},
+  {id:'ALT-2026-0040', time:'14:08', title:'Linked identity found', desc:'New number linked to watchlist', sev:'medium'},
+  {id:'ALT-2026-0041', time:'11:32', title:'Location anomaly', desc:'Device seen near known hideout', sev:'low'},
+  {id:'ALT-2026-0042', time:'09:15', title:'Known associate detected', desc:'Seen with wanted individual (CCTV)', sev:'medium'},
+  {id:'ALT-2026-0043', time:'08:40', title:'Multiple small transactions', desc:'Structuring pattern detected', sev:'low'},
+  {id:'ALT-2026-0044', time:'07:26', title:'New entity added to network', desc:'Linked through 3 different sources', sev:'medium'},
+];
+const SEV_COLOR = {high:'var(--red)', medium:'var(--amber)', low:'var(--green)'};
+
+// x/y are pixel coordinates on assets/india-map.webp (1245 x 1263), hand-calibrated
+// against the actual ⊙ city markers printed on that image.
+const CITIES = [
+  {name:'Delhi', x:452, y:364, level:'high', flags:42},
+  {name:'Jaipur', x:390, y:452, level:'medium', flags:23},
+  {name:'Lucknow', x:590, y:449, level:'medium', flags:19},
+  {name:'Ahmedabad', x:203, y:590, level:'low', flags:11},
+  {name:'Bhopal', x:430, y:608, level:'medium', flags:17},
+  {name:'Kolkata', x:852, y:615, level:'high', flags:36},
+  {name:'Mumbai', x:246, y:738, level:'high', flags:39},
+  {name:'Hyderabad', x:458, y:800, level:'medium', flags:21},
+  {name:'Bengaluru', x:350, y:950, level:'low', flags:14},
+  {name:'Chennai', x:592, y:1005, level:'medium', flags:18},
+];
+const LEVEL_COLOR = {high:'#ef4a5f', medium:'#f0a23c', low:'#e8d24a'};
+
+/* ================= TOAST ================= */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ================= HEADER DROPDOWNS ================= */
+function toggleDropdown(btnId, panelId){
+  const btn = document.getElementById(btnId);
+  const panel = document.getElementById(panelId);
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-panel.open').forEach(p=>{ if(p!==panel) p.classList.remove('open'); });
+    panel.classList.toggle('open');
+  });
+}
+toggleDropdown('notifBtn','notifPanel');
+toggleDropdown('profileBtn','profilePanel');
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.dropdown-panel.open').forEach(p=>p.classList.remove('open'));
+  document.getElementById('rangeMenu').classList.remove('open');
+});
+document.querySelectorAll('#profilePanel .menu-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const action = item.dataset.action;
+    if(action==='logout'){ showToast('Logging out... (placeholder)'); }
+    else if(action==='profile'){ showToast('Opening profile... (placeholder)'); }
+    else { showToast('Opening settings... (placeholder)'); }
+  });
+});
+
+document.getElementById('globalSearchBtn').addEventListener('click', doGlobalSearch);
+document.getElementById('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') doGlobalSearch(); });
+function doGlobalSearch(){
+  const q = document.getElementById('globalSearch').value.trim();
+  showToast(q ? `Searching for "${q}"... (placeholder)` : 'Enter a search term.');
+}
+
+/* ================= SIDEBAR NAV ================= */
+const navItems = document.querySelectorAll('.nav-item');
+const views = ['command','cases','network','entities','alerts','reports','sources','settings'];
+navItems.forEach(item=>{
+  item.addEventListener('click', (e)=>{
+    const target = item.dataset.view;
+
+    // Items with a real href (Cases, Network Analysis) just navigate normally —
+    // no need to intercept them in JS at all.
+    if(item.getAttribute('href')){
+      return;
+    }
+
+    navItems.forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+    views.forEach(v=>{
+      const el = document.getElementById('view-'+v);
+      if(!el) return;
+      el.classList.toggle('show', v===target);
+    });
+  });
+});
+
+/* ================= CASES LIST ================= */
+const caseListEl = document.getElementById('caseList');
+function renderCases(filter=''){
+  const f = filter.toLowerCase();
+  const filtered = CASES.filter(c => c.id.toLowerCase().includes(f) || c.title.toLowerCase().includes(f) || c.label.toLowerCase().includes(f));
+  caseListEl.innerHTML = '';
+  if(filtered.length===0){
+    caseListEl.innerHTML = '<div class="no-results">No cases match your search.</div>';
+    return;
+  }
+  filtered.forEach(c=>{
+    const row = document.createElement('div');
+    row.className = 'case-row';
+    row.innerHTML = `
+      <div class="case-id">${c.id}</div>
+      <div class="case-title">${c.title}</div>
+      <div class="case-meta">
+        <span class="status-pill" style="color:${STATUS_COLOR[c.status]}"><span class="status-dot" style="background:${STATUS_COLOR[c.status]}"></span>${c.label}</span>
+        <span class="case-date">${c.date}</span>
+      </div>`;
+    row.addEventListener('click', ()=> {
+  window.location.href = `cases.html?case=${encodeURIComponent(c.id)}`;
+});
+    caseListEl.appendChild(row);
+  });
+}
+renderCases();
+document.getElementById('caseSearchInput').addEventListener('input', e=> renderCases(e.target.value));
+document.getElementById('viewAllCases').addEventListener('click', ()=> {
+  window.location.href = 'cases.html';
+});
+
+/* New case modal */
+const newCaseModal = document.getElementById('newCaseModal');
+document.getElementById('newCaseBtn').addEventListener('click', ()=> newCaseModal.classList.add('open'));
+document.getElementById('cancelNewCase').addEventListener('click', ()=> newCaseModal.classList.remove('open'));
+newCaseModal.addEventListener('click', e=>{ if(e.target===newCaseModal) newCaseModal.classList.remove('open'); });
+document.getElementById('confirmNewCase').addEventListener('click', ()=>{
+  const title = document.getElementById('newCaseTitle').value.trim();
+  if(!title){ showToast('Please enter a case title.'); return; }
+  const priority = document.getElementById('newCasePriority').value;
+  const labelMap = {high:'HIGH PRIORITY', active:'ACTIVE', monitoring:'MONITORING'};
+  const num = 400 + Math.floor(Math.random()*99);
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  CASES.unshift({id:`C-2026-0${num}`, title, status:priority, label:labelMap[priority], date:dateStr});
+  renderCases(document.getElementById('caseSearchInput').value);
+  document.getElementById('newCaseTitle').value='';
+  newCaseModal.classList.remove('open');
+  showToast('New case created.');
+});
+
+/* ================= ALERTS LIST ================= */
+const alertsListEl = document.getElementById('alertsList');
+ALERTS.forEach(a=>{
+  const row = document.createElement('div');
+  row.className = 'alert-row';
+  row.innerHTML = `
+    <span class="alert-dot" style="background:${SEV_COLOR[a.sev]}"></span>
+    <div class="alert-body">
+      <div class="alert-time">${a.time}</div>
+      <div class="alert-title">${a.title}</div>
+      <div class="alert-desc">${a.desc}</div>
+    </div>
+    <span class="sev-badge" style="color:${SEV_COLOR[a.sev]}; background:${SEV_COLOR[a.sev]}22;">${a.sev.toUpperCase()}</span>`;
+    row.addEventListener('click', ()=> {
+  window.location.href = `alert.html?alert=${encodeURIComponent(a.id)}`;
+});
+    alertsListEl.appendChild(row);
+});
+document.getElementById('viewAllAlerts').addEventListener('click', ()=> {
+  window.location.href = 'alert.html';
+});
+/* ================= RANGE DROPDOWN ================= */
+const rangeBtn = document.getElementById('rangeBtn');
+const rangeMenu = document.getElementById('rangeMenu');
+rangeBtn.addEventListener('click', e=>{ e.stopPropagation(); rangeMenu.classList.toggle('open'); });
+document.querySelectorAll('.range-opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('.range-opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+    rangeBtn.innerHTML = `Last ${opt.dataset.range} Days <span class="chev">▾</span>`;
+    rangeMenu.classList.remove('open');
+    showToast(`Showing data for last ${opt.dataset.range} days.`);
+  });
+});
+
+/* ================= MAP: CITY DOTS + TOOLTIP + ZOOM ================= */
+const citiesGroup = document.querySelector('.cities');
+const tooltip = document.getElementById('mapTooltip');
+const mapViewport = document.getElementById('mapViewport');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+CITIES.forEach(city=>{
+  const g = document.createElementNS(SVG_NS,'g');
+  g.setAttribute('class','city-dot');
+
+  const color = LEVEL_COLOR[city.level];
+
+  // static soft halo behind everything
+  const halo = document.createElementNS(SVG_NS,'circle');
+  halo.setAttribute('cx', city.x); halo.setAttribute('cy', city.y); halo.setAttribute('r', 30);
+  halo.setAttribute('fill', color); halo.setAttribute('opacity','0.12');
+
+  // radar-ping ring: scale + fade, continuous
+  const ping = document.createElementNS(SVG_NS,'circle');
+  ping.setAttribute('cx', city.x); ping.setAttribute('cy', city.y); ping.setAttribute('r', 12);
+  ping.setAttribute('fill', 'none');
+  ping.setAttribute('stroke', color);
+  ping.setAttribute('stroke-width', '3.2');
+  ping.setAttribute('opacity', '0.6');
+  const animR = document.createElementNS(SVG_NS,'animate');
+  animR.setAttribute('attributeName','r');
+  animR.setAttribute('values','12;40');
+  animR.setAttribute('dur','2.2s');
+  animR.setAttribute('begin', (Math.random()*2).toFixed(2)+'s');
+  animR.setAttribute('repeatCount','indefinite');
+  const animO = document.createElementNS(SVG_NS,'animate');
+  animO.setAttribute('attributeName','opacity');
+  animO.setAttribute('values','0.6;0');
+  animO.setAttribute('dur','2.2s');
+  animO.setAttribute('begin', animR.getAttribute('begin'));
+  animO.setAttribute('repeatCount','indefinite');
+  ping.appendChild(animR);
+  ping.appendChild(animO);
+
+  // solid core dot with a gentle pulse
+  const dot = document.createElementNS(SVG_NS,'circle');
+  dot.setAttribute('cx', city.x); dot.setAttribute('cy', city.y); dot.setAttribute('r', 12);
+  dot.setAttribute('fill', color);
+  dot.setAttribute('class','glow-dot');
+  dot.style.animationDelay = (Math.random()*1.5)+'s';
+
+  const label = document.createElementNS(SVG_NS,'text');
+  label.setAttribute('x', city.x+20); label.setAttribute('y', city.y+7);
+  label.setAttribute('class','region-label'); label.setAttribute('opacity','0.9');
+  label.setAttribute('font-size','22');
+  label.setAttribute('fill', '#eaf2fb');
+  label.style.paintOrder = 'stroke';
+  label.style.stroke = 'rgba(6,10,16,0.85)';
+  label.style.strokeWidth = '3px';
+  label.textContent = city.name;
+
+  g.appendChild(halo); g.appendChild(ping); g.appendChild(dot); g.appendChild(label);
+
+  function showTip(evt){
+    const rect = mapViewport.getBoundingClientRect();
+    tooltip.innerHTML = `<b>${city.name}</b> — ${city.flags} active flags<br><span style="color:var(--text-faint);font-size:10px;">Activity: ${city.level.toUpperCase()}</span>`;
+    tooltip.style.display = 'block';
+    let left = evt.clientX - rect.left + 14;
+    let top = evt.clientY - rect.top - 10;
+    tooltip.style.left = left+'px';
+    tooltip.style.top = top+'px';
+  }
+  g.addEventListener('mousemove', showTip);
+  g.addEventListener('mouseenter', showTip);
+  g.addEventListener('mouseleave', ()=> tooltip.style.display='none');
+  g.addEventListener('click', showTip);
+
+  citiesGroup.appendChild(g);
+});
+
+let mapScale = 1;
+const mapSvgHolder = document.getElementById('mapSvgHolder');
+document.getElementById('zoomIn').addEventListener('click', ()=>{
+  mapScale = Math.min(2.2, mapScale + 0.2);
+  mapSvgHolder.style.transform = `scale(${mapScale})`;
+});
+document.getElementById('zoomOut').addEventListener('click', ()=>{
+  mapScale = Math.max(0.6, mapScale - 0.2);
+  mapSvgHolder.style.transform = `scale(${mapScale})`;
+});
+
+/* ================= QUICK ACTIONS ================= */
+document.querySelectorAll('.qa-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showToast(`${btn.dataset.qa} triggered — (placeholder action)`));
+});
+
+/* ================= CHARTS ================= */
+const growthLabels = ['10 Aug','15 Aug','20 Aug','25 Aug','30 Aug','04 Sep','08 Sep'];
+const entitiesData = [720, 980, 1210, 1430, 1610, 1740, 1842];
+const linksData = [240, 340, 430, 540, 640, 760, 870];
+
+new Chart(document.getElementById('growthChart'), {
+  type:'line',
+  data:{
+    labels: growthLabels,
+    datasets:[
+      {label:'Entities', data:entitiesData, borderColor:'#4a8fe7', backgroundColor:'rgba(74,143,231,0.12)', tension:0.35, fill:true, pointRadius:3, pointBackgroundColor:'#4a8fe7'},
+      {label:'Links', data:linksData, borderColor:'#3ccb7f', backgroundColor:'rgba(60,203,127,0.10)', tension:0.35, fill:true, pointRadius:3, pointBackgroundColor:'#3ccb7f'},
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{
+      backgroundColor:'#111926', borderColor:'#2fd4e8', borderWidth:1, titleColor:'#dbe4f0', bodyColor:'#dbe4f0', padding:10
+    }},
+    scales:{
+      y:{ min:0, max:2000, ticks:{color:'#57667c', font:{size:10}}, grid:{color:'rgba(148,169,199,0.08)'} },
+      x:{ ticks:{color:'#57667c', font:{size:10}}, grid:{display:false} }
+    }
+  }
+});
+
+const donutData = [
+  {label:'Suspects', pct:38, color:'#ef4a5f'},
+  {label:'Associates', pct:24, color:'#f0a23c'},
+  {label:'Organizations', pct:12, color:'#4a8fe7'},
+  {label:'Phone Numbers', pct:15, color:'#3ccb7f'},
+  {label:'Locations', pct:7, color:'#9b7de0'},
+  {label:'Others', pct:4, color:'#6b7686'},
+];
+new Chart(document.getElementById('donutChart'), {
+  type:'doughnut',
+  data:{
+    labels: donutData.map(d=>d.label),
+    datasets:[{ data: donutData.map(d=>d.pct), backgroundColor: donutData.map(d=>d.color), borderColor:'#0f151f', borderWidth:2 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'68%',
+    plugins:{ legend:{display:false}, tooltip:{
+      backgroundColor:'#111926', borderColor:'#2fd4e8', borderWidth:1, titleColor:'#dbe4f0', bodyColor:'#dbe4f0', padding:10,
+      callbacks:{ label: ctx => `${ctx.label}: ${ctx.parsed}%` }
+    }}
+  }
+});
+const donutLegendEl = document.getElementById('donutLegend');
+donutData.forEach(d=>{
+  const row = document.createElement('div');
+  row.className = 'donut-legend-item';
+  row.innerHTML = `<span class="left"><span class="dot" style="background:${d.color}"></span>${d.label}</span><span class="pct">${d.pct}%</span>`;
+  donutLegendEl.appendChild(row);
+});
+
+/* ================= LIVE CLOCK ================= */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function updateClock(){
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('liveClock').textContent = `${dateStr} | ${timeStr}`;
+}
+updateClock();
+setInterval(updateClock, 1000*15);
+</script>
+</body>
+<div class="bg-layer"></div>
+<div class="bg-overlay"></div>
+</html>
